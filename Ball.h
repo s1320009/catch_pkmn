@@ -17,6 +17,8 @@ typedef struct {
 	Vector2 speed;
 	Color color;
 
+	bool isAimingLeft;		 //ゲージを左においておくための変数
+
 	BallLaunchState state;	//現在の発射状態
 	Vector2 chargePower;	//チャージされた力
 	float chargeGaugeX;		//横ゲージの現在の長さ(0.0f～1.0f)
