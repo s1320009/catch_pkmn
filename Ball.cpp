@@ -163,6 +163,13 @@ void DrawBall(Ball ball) {
     // ボール本体を描画
 	DrawCircleV(ball.position, ball.radius, ball.color);
 
+    if (ball.state == BALL_WAIT_X) {
+        DrawText("PRESS [A/D] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+    }
+    if (ball.state == BALL_WAIT_Y) {
+        DrawText("PRESS [W/S] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+    }
+
     // 2. 状態に応じたチャージゲージUIの描画
     // 横チャージ中、またはそれ以降の状態なら画面下に横ゲージを表示
     if (ball.state >= BALL_CHARGE_X && ball.state <= BALL_AIMING) {
@@ -185,7 +192,7 @@ void DrawBall(Ball ball) {
 
         DrawRectangle(bgX, screenHeight - 60, gaugeMaxW, 20, LIGHTGRAY);
         DrawRectangle(rectX, screenHeight - 60, gaugeW, 20, ORANGE);
-        DrawText("X POWER", rectX, screenHeight - 85, 15, DARKGRAY);
+        DrawText("X POWER", bgX, screenHeight - 85, 15, DARKGRAY);
     }
 
     // 縦チャージ中、またはそれ以降の状態なら画面左に縦ゲージを表示
@@ -213,6 +220,6 @@ void DrawBall(Ball ball) {
                 DrawCircleV(simPos, 3, MAROON);
             }
         }
-        DrawText("PRESS [SPACE] TO LAUNCH / [B] TO CANCEL", 50, 40, 20, MAROON);
+        DrawText("PRESS [SPACE] TO LAUNCH / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
     }
 }

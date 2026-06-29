@@ -144,6 +144,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="resources\my_font.ttc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ball.h" />
