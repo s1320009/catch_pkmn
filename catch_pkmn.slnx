@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="catch_pkmn.vcxproj" Id="6c08730d-edd5-4b19-a62b-6f6aa7e48138" />
+</Solution>
