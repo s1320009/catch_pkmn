@@ -8,7 +8,8 @@ typedef enum {
 	BALL_WAIT_Y,		//2. Y軸(W/S)の入力待機状態
 	BALL_CHARGE_Y,		//3. Y軸(W/S)のチャージ状態
 	BALL_AIMING,		//4. 予測線出してスペースキー待機状態
-	BALL_FLYING			//5. 発射状態（減速処理）
+	BALL_FLYING,		//5. 発射状態（減速処理）
+	BALL_OUT			//6. 画面外に出た状態
 } BallLaunchState;
 
 typedef struct {
@@ -18,6 +19,7 @@ typedef struct {
 	Color color;
 
 	bool isAimingLeft;		 //ゲージを左においておくための変数
+	float outTimer;			 //画面外に出たときのタイマー
 
 	BallLaunchState state;	//現在の発射状態
 	Vector2 chargePower;	//チャージされた力

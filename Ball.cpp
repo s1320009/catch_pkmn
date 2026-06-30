@@ -4,7 +4,7 @@
 //windowは上がマイナス
 const float UP = -1.0f;
 // 最大チャージ時の初速（必要に応じて調整してください）
-const float MAX_LAUNCH_SPEED = 15.0f;
+const float MAX_LAUNCH_SPEED = 30.0f;
 // 飛行中の減速係数（摩擦。1.0未満で徐々に減速）
 const float BALL_FRICTION = 0.98f;
 
@@ -17,6 +17,7 @@ Ball CreateBall() {
 
     //ゲージを左においておくための変数
     ball.isAimingLeft = false;
+	ball.outTimer = 0.0f;                       //画面外に出たときのタイマー
 
     // ステートマシンの初期化
     ball.state = BALL_WAIT_X;
@@ -29,6 +30,10 @@ Ball CreateBall() {
 }
 
 void UpdateBall(Ball* ball) {
+    //消える処理で使う
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+
     //ゲージが往復して増減するスピード
     float gaugeSpeed = 2.0f * GetFrameTime(); //約0.5秒でMAXになる速度
 
@@ -135,6 +140,7 @@ void UpdateBall(Ball* ball) {
             break;
 
         case BALL_FLYING:
+		{       //変数float speedSquaredをこのcase内で使うために{}で囲む
             // 速度を座標に足して移動させる
             ball->position.x += ball->speed.x;
             ball->position.y += ball->speed.y;
@@ -152,6 +158,21 @@ void UpdateBall(Ball* ball) {
             if (IsKeyPressed(KEY_SPACE) || speedSquared < 0.04f) {
                 ball->state = BALL_WAIT_X;
             }
+            else if (ball->position.x < -ball->radius || ball->position.x > screenWidth + ball->radius ||
+                ball->position.y < -ball->radius || ball->position.y > screenHeight + ball->radius) {
+
+                ball->outTimer = 0.0f; // 画面外に出た瞬間にタイマーをリセット
+                ball->state = BALL_OUT;
+            }
+            break;
+        }
+
+		case BALL_OUT:
+			// 画面外に出たら、一定時間経過後に手元に戻す
+			ball->outTimer += GetFrameTime();
+			if (ball->outTimer >= 0.5f) { // 0.5秒経過したら手元に戻す
+				ball->state = BALL_WAIT_X;
+			}
             break;
     }
 }
