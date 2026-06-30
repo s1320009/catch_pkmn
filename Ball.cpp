@@ -165,7 +165,7 @@ void UpdateBall(Ball* ball) {
                 ball->state = BALL_OUT;
             }
             break;
-        }
+        }       //小部屋終わり
 
 		case BALL_OUT:
 			// 画面外に出たら、一定時間経過後に手元に戻す
