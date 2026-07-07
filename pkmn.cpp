@@ -1,0 +1,181 @@
+#include "pkmn.h"
+#include "raylib.h"
+#include <cmath>
+
+Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos) {
+	Pkmn pkmn = { 0 };                      // すべてのメンバを0で初期化
+
+    //ステートの初期化
+    pkmn.position = startPos;
+	pkmn.speed = { 0.0f, 0.0f };
+    pkmn.state = PKMN_STATE_THINK;
+    pkmn.timer = 0.0f;                      
+
+	//パラメータの初期化
+	pkmn.blueprint = blueprint;          // 設計図をコピー
+
+    return pkmn;
+}
+
+void UpdatePkmn(Pkmn* pkmn) {
+	// 状態遷移の処理
+	pkmn->timer += GetFrameTime(); // タイマーを更新
+
+	switch (pkmn->state) {
+		case PKMN_STATE_THINK:
+			pkmn->speed = { 0.0f, 0.0f }; // 移動速度をゼロにする
+			if (pkmn->timer >= pkmn->blueprint.thinkduration) {
+				pkmn->timer = 0.0f;		// タイマーをリセット
+
+				// マウスカーソルとの距離を計算
+				Vector2 mousePos = GetMousePosition();
+				float dx = pkmn->position.x - mousePos.x;
+				float dy = pkmn->position.y - mousePos.y;
+				float distanceToMouse = sqrtf(dx * dx + dy * dy);
+
+				// ポケモンタイプに応じて確率を変更
+				if (distanceToMouse < 200.0f) {
+					// =========================================
+					// 【マウスが近い場合】
+					// =========================================
+					int choice = GetRandomValue(1, 100);
+
+					if (pkmn->blueprint.type == PKMN_PIKACHU) {
+						// PIKACHU: ATTACK 30%, DASH 50%, MOVE 20%
+						if (choice <= 30) {
+							pkmn->state = PKMN_STATE_ATTACK;
+						}
+						else if (choice <= 80) {
+							pkmn->state = PKMN_STATE_DASH;
+						}
+						else {
+							pkmn->state = PKMN_STATE_MOVE;
+						}
+					}
+					else if (pkmn->blueprint.type == PKMN_MEWTWO) {
+						// MEWTWO: ATTACK 70%, DASH 10%, MOVE 20%
+						if (choice <= 70) {
+							pkmn->state = PKMN_STATE_ATTACK;
+						}
+						else if (choice <= 80) {
+							pkmn->state = PKMN_STATE_DASH;
+						}
+						else {
+							pkmn->state = PKMN_STATE_MOVE;
+						}
+					}
+				}
+				else {
+					// =========================================
+					// 【マウスが遠い場合】
+					// =========================================
+					int choice = GetRandomValue(1, 100);
+
+					if (pkmn->blueprint.type == PKMN_PIKACHU) {
+						// PIKACHU: ATTACK 20%, DASH 40%, MOVE 40%
+						if (choice <= 20) {
+							pkmn->state = PKMN_STATE_ATTACK;
+						}
+						else if (choice <= 60) {
+							pkmn->state = PKMN_STATE_DASH;
+						}
+						else {
+							pkmn->state = PKMN_STATE_MOVE;
+						}
+					}
+					else if (pkmn->blueprint.type == PKMN_MEWTWO) {
+						// MEWTWO: ATTACK 10%, DASH 40%, MOVE 50%
+						if (choice <= 10) {
+							pkmn->state = PKMN_STATE_ATTACK;
+						}
+						else if (choice <= 50) {
+							pkmn->state = PKMN_STATE_DASH;
+						}
+						else {
+							pkmn->state = PKMN_STATE_MOVE;
+						}
+					}
+				}
+			}
+			break;
+
+			// --------------------------------------------------
+			// ● ATTACK: エディタで決めた持続時間だけ攻撃して STAY へ
+			// --------------------------------------------------
+		case PKMN_STATE_ATTACK:
+			pkmn->speed = { 0.0f, 0.0f }; // 攻撃中はその場で固定
+
+			// エディタ設定の攻撃持続時間に達したら
+			if (pkmn->timer >= pkmn->blueprint.attackduration) {
+				pkmn->timer = 0.0f;
+				pkmn->state = PKMN_STATE_STAY; // STAYへ移行
+			}
+			break;
+
+			// --------------------------------------------------
+			// ● STAY: エディタで決めた時間だけ止まり、ランダムで次へ
+			// --------------------------------------------------
+		case PKMN_STATE_STAY:
+			pkmn->speed = { 0.0f, 0.0f }; // 待機中も停止
+
+			// エディタ設定の待機時間に達したら
+			if (pkmn->timer >= pkmn->blueprint.stayduration) {
+				pkmn->timer = 0.0f;
+
+				// 🎲 確率分岐：1か2のサイコロを振る
+				int choice = GetRandomValue(1, 2);
+				if (choice == 1) {
+					pkmn->state = PKMN_STATE_THINK;
+				}
+				else {
+					pkmn->state = PKMN_STATE_DASH;
+				}
+			}
+			break;
+
+			// --------------------------------------------------
+			// ● DASH: 1秒間だけ走って THINK か DASH へ（ご自身のルール）
+			// --------------------------------------------------
+		case PKMN_STATE_DASH:
+			// エディタで設定したダッシュ速度をそのまま適用
+			pkmn->speed.x = -pkmn->blueprint.dashSpeed;
+
+			// 1秒走ったら
+			if (pkmn->timer >= 1.0f) {
+				pkmn->timer = 0.0f;
+
+				// 🎲 確率分岐：1か2のサイコロを振る
+				int choice = GetRandomValue(1, 2);
+				if (choice == 1) {
+					pkmn->state = PKMN_STATE_THINK;
+				}
+				else {
+					pkmn->state = PKMN_STATE_DASH; // もう一度ダッシュ！（連続ダッシュ）
+				}
+			}
+			break;
+	}
+
+	// 位置の更新
+	pkmn->position.x += pkmn->speed.x;
+	pkmn->position.y += pkmn->speed.y;
+}
+
+// ==========================================================
+// 3. 描画関数
+// ==========================================================
+void DrawPkmn(Pkmn pkmn) {
+	// 状態（State）に応じて色や大きさを変えて「固有の行動」を視覚化する
+	if (pkmn.state == PKMN_STATE_ATTACK) {
+		// 攻撃中は半径1.5倍でオレンジ色に
+		DrawCircleV(pkmn.position, pkmn.blueprint.radius * 1.5f, ORANGE);
+	}
+	else if (pkmn.state == PKMN_STATE_DASH) {
+		// ダッシュ中はエディタの色を使いつつ、ちょっと大きく見せるなど
+		DrawCircleV(pkmn.position, pkmn.blueprint.radius * 1.2f, pkmn.blueprint.color);
+	}
+	else {
+		// 通常はエディタ設定のまま
+		DrawCircleV(pkmn.position, pkmn.blueprint.radius, pkmn.blueprint.color);
+	}
+}

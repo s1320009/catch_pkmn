@@ -10,27 +10,44 @@ typedef enum {
 // 2. pkmnの状態を表す列挙型
 typedef enum {
 	PKMN_STATE_THINK,
+	PKMN_STATE_MOVE,
+	PKMN_STATE_ATTACK,
 	PKMN_STATE_STAY,
-	PKMN_STATE_DASH,
-	PKMN_STATE_ATTACK
+	PKMN_STATE_DASH
 }PkmnState;
 
+// ==========================================================
+// ★変更点①: 【エディタでいじる設計図】を構造体として切り離す
+// ==========================================================
+typedef struct {
+	PkmnType type;          // ポケモンの種類
+	float radius;           // ポケモンの半径
+	Color color;            // ポケモンの色
+	float dashSpeed;        // ダッシュ速度
+	float attackduration;   // 攻撃持続時間
+	float thinkduration;    // 思考時間
+	float stayduration;     // 待機時間
+} PkmnBlueprint;			// (設定)ゲームループが回っている間、ずっと同じ値であるもの(Parameter / Blueprint)
+
+// ==========================================================
+// ★変更点②: 【ゲーム中にリアルタイム変化する状態】の構造体
+// ==========================================================
 typedef struct {
 	Vector2 position;	// ポケモンの位置
-	float radius;		// ポケモンの半径
-	Vector2 speed;		// ポケモンの移動速度
-	Color color;		// ポケモンの色
-
-	PkmnType type;		// ポケモンの種類
+	Vector2 speed;		// ポケモンの"現在の"移動速度
 	PkmnState state;	// ポケモンの状態
 	float timer;		// ポケモンの状態遷移用タイマー
 
-	// ---pkmnの種類ごとのパラメータ---
-	float dashSpeed;		// ダッシュ速度
-	float attackduration;	// 攻撃持続時間
-}Pkmn;
+	PkmnBlueprint blueprint;	// エディタで設定した設計図を丸ごと内包する
+}Pkmn;					// (状態)ゲーム中にリアルタイムで変化するもの(State / Instance)
 
-//関数宣言
-Pkmn CreatePkmn(PkmnType type, Vector2 startPos);
-void UpdatePkmn(Pkmn *pkmn);
+// ==========================================================
+// ★変更点③: 生成関数に「設計図」を渡せるようにする
+// ==========================================================
+
+// 変更前: Pkmn CreatePkmn(PkmnType type, Vector2 startPos);
+// 変更後:
+Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos);
+
+void UpdatePkmn(Pkmn* pkmn);
 void DrawPkmn(Pkmn pkmn);
