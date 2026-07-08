@@ -1,6 +1,7 @@
 ﻿#include "raylib.h"
 #include "Ball.h"
 #include "pkmn.h"
+#include "MEWTWO.h"
 
 #define TODAY_COMMENT ((const char*)u8"karaage")
 
@@ -20,6 +21,7 @@ int main() {
 	pikaSetting.attackduration = 0.5f;
 	pikaSetting.thinkduration = 1.0f;
 	pikaSetting.stayduration = 1.5f;
+	pikaSetting.moveduration = 0.5f;
 
 	PkmnBlueprint m2Setting = {};
 	m2Setting.type = PKMN_MEWTWO;
@@ -29,6 +31,7 @@ int main() {
 	m2Setting.attackduration = 1.0f;
 	m2Setting.thinkduration = 0.5f;
 	m2Setting.stayduration = 1.0f;
+	m2Setting.moveduration = 0.5f;
 
 	Pkmn pika = CreatePkmn(pikaSetting, { 700, 300 });
 	Pkmn m2 = CreatePkmn(m2Setting, { 100, 300 });
@@ -41,6 +44,7 @@ int main() {
 		UpdateBall(&ball);
 		UpdatePkmn(&pika);
 		UpdatePkmn(&m2);
+		UpdateProjectileManager(GetMewtwoProjectileManager());
 
 		// Draw
 		BeginDrawing();
@@ -49,6 +53,7 @@ int main() {
 		DrawBall(ball);
 		DrawPkmn(pika);
 		DrawPkmn(m2);
+		DrawProjectileManager(*GetMewtwoProjectileManager());
 		EndDrawing();
 	}
 

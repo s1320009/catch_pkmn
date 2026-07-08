@@ -27,6 +27,7 @@ typedef struct {
 	float attackduration;   // 攻撃持続時間
 	float thinkduration;    // 思考時間
 	float stayduration;     // 待機時間
+	float moveduration;     // 異能時間
 } PkmnBlueprint;			// (設定)ゲームループが回っている間、ずっと同じ値であるもの(Parameter / Blueprint)
 
 // ==========================================================

@@ -122,6 +122,24 @@ void UpdatePkmn(Pkmn* pkmn) {
 			break;
 
 			// --------------------------------------------------
+			// ● MOVE: 進行方向に少しだけ移動する
+			// --------------------------------------------------
+		case PKMN_STATE_MOVE:
+			if (pkmn->blueprint.type == PKMN_MEWTWO) {
+				UpdateMewtwoMove(pkmn);
+			}
+			else {
+				pkmn->speed.x = -pkmn->blueprint.dashSpeed * 0.5f;
+				pkmn->speed.y = 0.0f;
+			}
+
+			if (pkmn->timer >= pkmn->blueprint.moveduration) {
+				pkmn->timer = 0.0f;
+				pkmn->state = PKMN_STATE_THINK;
+			}
+			break;
+
+			// --------------------------------------------------
 			// ● STAY: エディタで決めた時間だけ止まり、ランダムで次へ
 			// --------------------------------------------------
 		case PKMN_STATE_STAY:
@@ -148,6 +166,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 		case PKMN_STATE_DASH:
 			// エディタで設定したダッシュ速度をそのまま適用
 			pkmn->speed.x = -pkmn->blueprint.dashSpeed;
+			pkmn->speed.y = 0.0f;
 
 			// 1秒走ったら
 			if (pkmn->timer >= 1.0f) {

@@ -119,12 +119,9 @@ void UpdateMewtwoAttack(Pkmn* pkmn) {
 void UpdateMewtwoMove(Pkmn* pkmn) {
 	if (pkmn->blueprint.type != PKMN_MEWTWO) return;
 
-	// MEWTWO のMOVE処理（必要に応じてカスタマイズ）
-	// 例：通常の移動処理より速く移動させるなど
-
-	// 現在は通常の移動として実装
-	pkmn->position.x += pkmn->speed.x;
-	pkmn->position.y += pkmn->speed.y;
+	// MEWTWO は通常移動より少しだけ速く進む
+	pkmn->speed.x = -pkmn->blueprint.dashSpeed * 0.75f;
+	pkmn->speed.y = 0.0f;
 }
 
 // ==========================================================
