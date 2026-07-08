@@ -1,20 +1,23 @@
 #include "pkmn.h"
 #include "raylib.h"
 #include <cmath>
+#include "MEWTWO.h"
 
 Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos) {
 	Pkmn pkmn = { 0 };                      // すべてのメンバを0で初期化
 
-    //ステートの初期化
-    pkmn.position = startPos;
+	//ステートの初期化
+	pkmn.position = startPos;
 	pkmn.speed = { 0.0f, 0.0f };
-    pkmn.state = PKMN_STATE_THINK;
-    pkmn.timer = 0.0f;                      
+	pkmn.state = PKMN_STATE_THINK;
+	pkmn.timer = 0.0f;
+	pkmn.rotation = 0.0f;					 // 回転角度
+	pkmn.attackPhase = 0;					 // ATTACK フェーズ
 
 	//パラメータの初期化
 	pkmn.blueprint = blueprint;          // 設計図をコピー
 
-    return pkmn;
+	return pkmn;
 }
 
 void UpdatePkmn(Pkmn* pkmn) {
@@ -100,15 +103,21 @@ void UpdatePkmn(Pkmn* pkmn) {
 			break;
 
 			// --------------------------------------------------
-			// ● ATTACK: エディタで決めた持続時間だけ攻撃して STAY へ
+			// ● ATTACK: ポケモンタイプに応じた攻撃処理
 			// --------------------------------------------------
 		case PKMN_STATE_ATTACK:
 			pkmn->speed = { 0.0f, 0.0f }; // 攻撃中はその場で固定
 
-			// エディタ設定の攻撃持続時間に達したら
-			if (pkmn->timer >= pkmn->blueprint.attackduration) {
-				pkmn->timer = 0.0f;
-				pkmn->state = PKMN_STATE_STAY; // STAYへ移行
+			if (pkmn->blueprint.type == PKMN_MEWTWO) {
+				// MEWTWO 専用の ATTACK 処理
+				UpdateMewtwoAttack(pkmn);
+			}
+			else {
+				// 通常の ATTACK（PIKACHU等）
+				if (pkmn->timer >= pkmn->blueprint.attackduration) {
+					pkmn->timer = 0.0f;
+					pkmn->state = PKMN_STATE_STAY;
+				}
 			}
 			break;
 
@@ -166,7 +175,11 @@ void UpdatePkmn(Pkmn* pkmn) {
 // ==========================================================
 void DrawPkmn(Pkmn pkmn) {
 	// 状態（State）に応じて色や大きさを変えて「固有の行動」を視覚化する
-	if (pkmn.state == PKMN_STATE_ATTACK) {
+	if (pkmn.state == PKMN_STATE_ATTACK && pkmn.blueprint.type == PKMN_MEWTWO) {
+		// MEWTWO ATTACK: 専用描画関数を呼び出し
+		DrawMewtwoAttack(pkmn);
+	}
+	else if (pkmn.state == PKMN_STATE_ATTACK) {
 		// 攻撃中は半径1.5倍でオレンジ色に
 		DrawCircleV(pkmn.position, pkmn.blueprint.radius * 1.5f, ORANGE);
 	}

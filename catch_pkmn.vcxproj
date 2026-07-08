@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="Ball.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MEWTWO.cpp" />
     <ClCompile Include="pkmn.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -149,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ball.h" />
+    <ClInclude Include="MEWTWO.h" />
     <ClInclude Include="pkmn.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

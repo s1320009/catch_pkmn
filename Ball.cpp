@@ -241,6 +241,6 @@ void DrawBall(Ball ball) {
                 DrawCircleV(simPos, 3, MAROON);
             }
         }
-        DrawText("PRESS [SPACE] TO LAUNCH / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
-    }
-}
+                         DrawText("PRESS [SPACE] TO LAUNCH / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+                     }
+                 }
