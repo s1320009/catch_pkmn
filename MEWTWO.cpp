@@ -154,21 +154,17 @@ void DrawMewtwoAttack(Pkmn pkmn) {
 
 Projectile CreateProjectile(Vector2 centerPos, Vector2 initialPos, float distance, float direction, float rotationSpeed, float maxLifeTime, float radius, Color color) {
 	Projectile proj = { 0 };
-	proj.initialPosition = centerPos;
-	proj.initialDistance = distance;
-	proj.initialDirection = direction;
-	proj.currentRotation = 0.0f;
-	proj.rotationSpeed = rotationSpeed;
+	proj.centerPos = centerPos;  // 公転中心（MEWTWO位置）
+	proj.distance = distance;   // 初期距離
+	proj.angle = direction;     // 初期角度
+	proj.angularVelocity = rotationSpeed;  // 角速度（MEWTWO の回転に追従）
+	proj.distanceGrowthRate = 100.0f;  // 距離増加速度（毎秒100px遠ざかる）
+	proj.position = initialPos;
 	proj.lifeTime = 0.0f;
 	proj.maxLifeTime = maxLifeTime;
 	proj.radius = radius;
 	proj.color = color;
 	proj.isActive = true;
-
-	// 初期位置を計算
-	float angleRad = (direction * 3.14159f / 180.0f);
-	proj.position.x = centerPos.x + distance * cosf(angleRad);
-	proj.position.y = centerPos.y + distance * sinf(angleRad);
 
 	return proj;
 }
@@ -184,16 +180,16 @@ void UpdateProjectile(Projectile* proj) {
 		return;
 	}
 
-	// 回転角度を更新
-	proj->currentRotation += proj->rotationSpeed * GetFrameTime();
+	// 角度を更新（MEWTWO の回転に追従）
+	proj->angle += proj->angularVelocity * GetFrameTime();
 
-	// 新しい角度を計算
-	float newAngle = proj->initialDirection + proj->currentRotation;
-	float angleRad = (newAngle * 3.14159f / 180.0f);
+	// 距離を増加させる（遠ざかる）
+	proj->distance += proj->distanceGrowthRate * GetFrameTime();
 
-	// 中心位置からの相対位置を計算（円弧軌道）
-	proj->position.x = proj->initialPosition.x + proj->initialDistance * cosf(angleRad);
-	proj->position.y = proj->initialPosition.y + proj->initialDistance * sinf(angleRad);
+	// 新しい角度と距離から位置を計算（カーブ軌道）
+	float angleRad = (proj->angle * 3.14159f / 180.0f);
+	proj->position.x = proj->centerPos.x + proj->distance * cosf(angleRad);
+	proj->position.y = proj->centerPos.y + proj->distance * sinf(angleRad);
 }
 
 void DrawProjectile(Projectile proj) {

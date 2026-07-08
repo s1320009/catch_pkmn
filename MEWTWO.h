@@ -7,11 +7,11 @@
 
 typedef struct {
 	Vector2 position;           // 弾の現在位置
-	Vector2 initialPosition;    // 発射時の中心位置（MEWTWO の位置）
-	float initialDistance;      // 発射時の距離（弾が中心から离れた距離）
-	float initialDirection;     // 発射方向（度）
-	float currentRotation;      // 現在の回転角度（度）
-	float rotationSpeed;        // 回転速度（度/秒）
+	Vector2 centerPos;          // 公転中心（MEWTWO の位置）
+	float distance;             // 中心からの現在距離
+	float angle;                // 現在の角度（度）
+	float angularVelocity;      // 角速度（度/秒）
+	float distanceGrowthRate;   // 距離増加速度（px/秒）
 	float lifeTime;             // 弾の寿命（経過時間）
 	float maxLifeTime;          // 弾の最大寿命（秒）
 	float radius;               // 弾の半径
