@@ -72,10 +72,12 @@ typedef struct {
 	float rotationPerSec;           // MEWTWO 本体の回転速度（度/秒）
 									 // 例：30.0f = 1秒で30度回転
 
-	float attackPhaseTime;          // 各フェーズの時間（秒）
-									 // ATTACK は2つのフェーズに分かれている
-									 // フェーズ0（0～0.5秒）: 初回発射
-									 // フェーズ1（0.5～1.0秒）: 2回目発射
+	int startupFrame;                 // 攻撃開始までの前隙（フレーム数）
+	// 例：30 = 0.5秒後に攻撃開始
+	int executeFrame;                 // 攻撃中の実行時間（フレーム数）
+	// 例：25 = 0.417秒間の攻撃中
+	int wholeFrame;                   // 攻撃終了までの後隙（フレーム数）
+	// 例：35 = 0.583秒間の後隙
 
 	int projectilesPerAttack;       // 1回の発射で出す弾の数（通常4個：上下左右）
 

@@ -14,7 +14,9 @@ static ProjectileManager g_mewtwoProjectileManager = { 0 };
 MewtwoAttackParameters GetMewtwoAttackParameters() {
 	MewtwoAttackParameters params;
 	params.rotationPerSec = 30.0f;          // 1秒で30度回転
-	params.attackPhaseTime = 0.5f;          // 各フェーズ 0.5秒なくな
+	params.startupFrame = 5;               // 攻撃開始までの前隙（フレーム数）
+	params.executeFrame = 35;               // 攻撃中の実行時間（フレーム数）
+	params.wholeFrame = 60;                 // 攻撃終了までの後隙（フレーム数）
 	params.projectilesPerAttack = 4;        // 上下左右4方向
 	params.projectileDistance = 50.0f;      // 中心から 50px 離れた位置から発射
 	params.projectileRadius = 8.0f;         // 弾の半径 8px
@@ -40,15 +42,13 @@ void UpdateMewtwoAttack(Pkmn* pkmn) {
 
 	MewtwoAttackParameters params = GetMewtwoAttackParameters();
 
+	pkmn->frameCounter++;
+
 	// 回転速度を適用
 	pkmn->rotation += params.rotationPerSec * GetFrameTime();
 
-	// =========================================
-	// フェーズ管理：1秒間で 2回発射（各フェーズ 0.5秒）
-	// =========================================
-
-	// フェーズ 0（0～0.5秒）: 初回発射タイミング
-	if (pkmn->timer >= 0.0f && pkmn->timer < params.attackPhaseTime && pkmn->attackPhase == 0) {
+	// 二回目
+	if (pkmn->frameCounter == params.startupFrame) {
 		// 上下左右から4発同時発射
 		// 方向: 上(-90度)、下(90度)、右(0度)、左(180度)
 
@@ -77,12 +77,10 @@ void UpdateMewtwoAttack(Pkmn* pkmn) {
 
 			AddProjectile(&g_mewtwoProjectileManager, proj);
 		}
-
-		pkmn->attackPhase = 1; // 次のフェーズへ
 	}
 
-	// フェーズ 1（0.5秒～1.0秒）: 2回目発射タイミング
-	if (pkmn->timer >= params.attackPhaseTime && pkmn->timer < params.attackPhaseTime * 2.0f && pkmn->attackPhase == 1) {
+	// 二回目
+	if (pkmn->frameCounter == params.executeFrame) {
 		// 上下左右から4発同時発射（同じパターン）
 		float directions[4] = { -90.0f, 90.0f, 0.0f, 180.0f };
 		Color colors[4] = { PURPLE, PURPLE, PURPLE, PURPLE };
@@ -107,15 +105,13 @@ void UpdateMewtwoAttack(Pkmn* pkmn) {
 
 			AddProjectile(&g_mewtwoProjectileManager, proj);
 		}
-
-		pkmn->attackPhase = 2; // 攻撃完了フェーズ
 	}
 
 	// ATTACK終了判定
-	if (pkmn->timer >= pkmn->blueprint.attackduration) {
+	if (pkmn->frameCounter == params.wholeFrame) {
+		pkmn->frameCounter = 0;
 		pkmn->timer = 0.0f;
 		pkmn->rotation = 0.0f;
-		pkmn->attackPhase = 0;
 		pkmn->state = PKMN_STATE_STAY;
 	}
 }
@@ -200,7 +196,7 @@ void DrawMewtwoAttack(Pkmn pkmn) {
 	DrawLineV(pkmn.position, lineEnd, YELLOW);
 
 	// デバッグ用：現在のフェーズと回転角度を表示
-	DrawText(TextFormat("Phase: %d, Rotation: %.1f", pkmn.attackPhase, pkmn.rotation), 
+	DrawText(TextFormat("frame: %d, Rotation: %.1f", pkmn.frameCounter, pkmn.rotation), 
 			 (int)pkmn.position.x - 50, (int)pkmn.position.y - 80, 12, WHITE);
 }
 
