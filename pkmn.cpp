@@ -13,6 +13,7 @@ Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos) {
 	pkmn.timer = 0.0f;
 	pkmn.rotation = 0.0f;					 // 回転角度
 	pkmn.attackPhase = 0;					 // ATTACK フェーズ
+	pkmn.isVisible = true;					 // 画面内にいる状態
 
 	//パラメータの初期化
 	pkmn.blueprint = blueprint;          // 設計図をコピー
@@ -193,6 +194,9 @@ void UpdatePkmn(Pkmn* pkmn) {
 // 3. 描画関数
 // ==========================================================
 void DrawPkmn(Pkmn pkmn) {
+	//見えなくなる
+	if(pkmn.isVisible == false) return;
+
 	// 状態（State）に応じて色や大きさを変えて「固有の行動」を視覚化する
 	if (pkmn.state == PKMN_STATE_ATTACK && pkmn.blueprint.type == PKMN_MEWTWO) {
 		// MEWTWO ATTACK: 専用描画関数を呼び出し

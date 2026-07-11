@@ -40,6 +40,7 @@ typedef struct {
 	float timer;		// ポケモンの状態遷移用タイマー
 	float rotation;		// ポケモンの回転角度（度）- MEWTWO ATTACK用
 	int attackPhase;	// ATTACK状態のフェーズ（0=初回発射, 1=2回目発射）
+	bool isVisible;		// ポケモンが画面内にいるかどうか（画面外に出たら false）
 
 	PkmnBlueprint blueprint;	// エディタで設定した設計図を丸ごと内包する
 }Pkmn;					// (状態)ゲーム中にリアルタイムで変化するもの(State / Instance)

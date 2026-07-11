@@ -4,10 +4,13 @@
 #include "MEWTWO.h"
 
 #define TODAY_COMMENT ((const char*)u8"karaage")
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+
 
 int main() {
 	// 画面の初期化
-	InitWindow(800, 600, "Catch pkmn");
+	InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Catch pkmn");
 	SetTargetFPS(60);
 
 	//初期化

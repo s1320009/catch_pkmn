@@ -14,7 +14,7 @@ static ProjectileManager g_mewtwoProjectileManager = { 0 };
 MewtwoAttackParameters GetMewtwoAttackParameters() {
 	MewtwoAttackParameters params;
 	params.rotationPerSec = 30.0f;          // 1秒で30度回転
-	params.attackPhaseTime = 0.5f;          // 各フェーズ 0.5秒
+	params.attackPhaseTime = 0.5f;          // 各フェーズ 0.5秒なくな
 	params.projectilesPerAttack = 4;        // 上下左右4方向
 	params.projectileDistance = 50.0f;      // 中心から 50px 離れた位置から発射
 	params.projectileRadius = 8.0f;         // 弾の半径 8px
@@ -117,11 +117,56 @@ void UpdateMewtwoAttack(Pkmn* pkmn) {
 // ==========================================================
 
 void UpdateMewtwoMove(Pkmn* pkmn) {
+	//pkmn->blueprint.type != PKMN_MEWTWO の場合は無視
 	if (pkmn->blueprint.type != PKMN_MEWTWO) return;
 
-	// MEWTWO は通常移動より少しだけ速く進む
-	pkmn->speed.x = -pkmn->blueprint.dashSpeed * 0.75f;
-	pkmn->speed.y = 0.0f;
+	//フレームで管理する場合は++　positionは速度xフレーム時間なのでgetFrameTime()する
+	pkmn->timer++;
+
+	//前隙15f
+	if (pkmn->timer <= 15) {
+		pkmn->speed = { 0.0f, 0.0f };
+	}
+
+	//10f消える　次の場所を探す
+	else if (pkmn->timer <= 25) {
+		pkmn->isVisible = false;    //描画と当たり判定を消す
+
+		if (pkmn->timer == 16) {
+			Vector2 nextPos;
+			bool isOverlapping = true;
+
+			while (isOverlapping) {
+				//ランダムで次の座標を決める
+				nextPos.x = GetRandomValue(pkmn->blueprint.radius, GetScreenWidth() - pkmn->blueprint.radius);
+				nextPos.y = GetRandomValue(pkmn->blueprint.radius, GetScreenHeight() - pkmn->blueprint.radius);
+				//重なり判定
+				if (CheckCollisionCircles(nextPos, pkmn->blueprint.radius, pkmn->position, pkmn->blueprint.radius)) {
+					isOverlapping = true;
+				}
+				else {
+					isOverlapping = false;
+				}
+			}
+
+			pkmn->position = nextPos;
+		}
+	}
+	//後隙10f
+	else if (pkmn->timer <= 35) {
+		pkmn->isVisible = true;   //描画と当たり判定を復活
+		pkmn->speed = { 0.0f, 0.0f };
+	}
+	else {
+		pkmn->timer = 0.0f;
+		int choice = GetRandomValue(1, 2);
+		if (choice == 1) {
+			pkmn->state = PKMN_STATE_ATTACK;
+		}
+		else {
+			pkmn->state = PKMN_STATE_STAY;
+		}
+	}
 }
 
 // ==========================================================
@@ -152,42 +197,100 @@ void DrawMewtwoAttack(Pkmn pkmn) {
 // Projectile（プロジェクタイル）関連の実装
 // ==========================================================
 
+// ==========================================================
+// 【CreateProjectile】弾を生成する
+// ==========================================================
+// 
+// 【重要】この関数は「弾の状態を初期化する」だけです。
+// 実際の position は初期値に設定されますが、UpdateProjectile で毎フレーム
+// 再計算されるため、初期値は実質参照されません。
+//
+// 【パラメータの意味】
+//   centerPos: MEWTWO の座標（軌道の中心）
+//   initialPos: 弾が生成される位置（この時点でのみ使われる）
+//   distance: 中心からの距離（px）。毎フレーム distanceGrowthRate ずつ増える
+//   direction: 弾の方向（度）。-90=上, 0=右, 90=下, 180=左
+//   rotationSpeed: 毎秒何度回転するか（angularVelocity に設定される）
+//   maxLifeTime: 弾が消えるまでの秒数
+//   radius: 弾の大きさ（px）
+//   color: 弾の色
+//
+
 Projectile CreateProjectile(Vector2 centerPos, Vector2 initialPos, float distance, float direction, float rotationSpeed, float maxLifeTime, float radius, Color color) {
 	Projectile proj = { 0 };
-	proj.centerPos = centerPos;  // 公転中心（MEWTWO位置）
-	proj.distance = distance;   // 初期距離
-	proj.angle = direction;     // 初期角度
-	proj.angularVelocity = rotationSpeed;  // 角速度（MEWTWO の回転に追従）
-	proj.distanceGrowthRate = 100.0f;  // 距離増加速度（毎秒100px遠ざかる）
-	proj.position = initialPos;
-	proj.lifeTime = 0.0f;
-	proj.maxLifeTime = maxLifeTime;
-	proj.radius = radius;
-	proj.color = color;
-	proj.isActive = true;
+
+	// ===== 軌道情報の設定 =====
+	proj.centerPos = centerPos;                    // MEWTWO の座標が軌道の中心
+	proj.distance = distance;                      // 初期距離（50px など）
+	proj.angle = direction;                        // 初期角度（-90度など）
+	proj.angularVelocity = rotationSpeed;          // MEWTWO の回転速度を引き継ぐ
+	proj.distanceGrowthRate = 100.0f;              // 毎秒100px遠ざかる（固定値）
+
+	// ===== 位置と寿命の初期化 =====
+	proj.position = initialPos;                    // 初期位置（すぐに再計算される）
+	proj.lifeTime = 0.0f;                          // 生成直後は経過時間0
+	proj.maxLifeTime = maxLifeTime;                // 寿命を記録（3秒など）
+
+	// ===== 描画情報 =====
+	proj.radius = radius;                          // 弾のサイズ（8px など）
+	proj.color = color;                            // 弾の色（PURPLE など）
+
+	// ===== 状態 =====
+	proj.isActive = true;                          // 生成直後は生きている状態
 
 	return proj;
 }
 
+// ==========================================================
+// 【UpdateProjectile】毎フレーム弾を更新する
+// ==========================================================
+// 
+// 【カーブ軌道の核】ここで角度と距離を両方増やすことで、
+// 回転しながら遠ざかる螺旋軌道が実現される。
+//
+// 【流れ】
+// 1. 経過時間を加算
+// 2. 寿命切れチェック → 死んだ弾は isActive = false で除外
+// 3. 角度を増加させる → MEWTWO を中心に回転する効果
+// 4. 距離を増加させる → 中心から遠ざかる効果
+// 5. 新しい angle と distance から position を計算（極座標 → 直交座標）
+//
+
 void UpdateProjectile(Projectile* proj) {
-	if (!proj->isActive) return;
+	if (!proj->isActive) return;  // 既に死んでいる弾は処理しない
 
-	proj->lifeTime += GetFrameTime();
+	// ===== 1. 経過時間を加算 =====
+	float dt = GetFrameTime();  // フレーム時間（通常 1/60 ≈ 0.0167秒）
+	proj->lifeTime += dt;
 
-	// 寿命切れ
+	// ===== 2. 寿命チェック =====
 	if (proj->lifeTime >= proj->maxLifeTime) {
-		proj->isActive = false;
+		proj->isActive = false;  // 寿命切れ → 消す
 		return;
 	}
 
-	// 角度を更新（MEWTWO の回転に追従）
-	proj->angle += proj->angularVelocity * GetFrameTime();
+	// ===== 3. 角度を更新（弾が回転する） =====
+	// 例：angularVelocity=120度/秒、dt=0.0167秒
+	//     → 120 * 0.0167 ≈ 2度ずつ増える
+	proj->angle += proj->angularVelocity * dt;
 
-	// 距離を増加させる（遠ざかる）
-	proj->distance += proj->distanceGrowthRate * GetFrameTime();
+	// ===== 4. 距離を更新（弾が遠ざかる） =====
+	// 例：distanceGrowthRate=100px/秒、dt=0.0167秒
+	//     → 100 * 0.0167 ≈ 1.67px ずつ増える
+	proj->distance += proj->distanceGrowthRate * dt;
 
-	// 新しい角度と距離から位置を計算（カーブ軌道）
-	float angleRad = (proj->angle * 3.14159f / 180.0f);
+	// ===== 5. 極座標 → 直交座標への変換 =====
+	// 公式：
+	// x = centerX + distance * cos(angle)
+	// y = centerY + distance * sin(angle)
+	//
+	// 例：centerPos=(400, 300), angle=-90度, distance=50px
+	//     cos(-90°) = 0, sin(-90°) = -1
+	//     → x = 400 + 50*0 = 400
+	//     → y = 300 + 50*(-1) = 250
+	//     → 結果：MEWTWO の上、50px の位置
+	//
+	float angleRad = (proj->angle * 3.14159f / 180.0f);  // 度をラジアンに変換
 	proj->position.x = proj->centerPos.x + proj->distance * cosf(angleRad);
 	proj->position.y = proj->centerPos.y + proj->distance * sinf(angleRad);
 }
