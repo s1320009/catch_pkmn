@@ -23,6 +23,14 @@ MewtwoAttackParameters GetMewtwoAttackParameters() {
 	return params;
 }
 
+MewtwoMoveParameters GetMewtwoMoveParameters() {
+	MewtwoMoveParameters params;
+	params.startupFrame = 15;      // 前隙 15フレーム
+	params.executeFrame = 25;	  // 後隙抜き時間 25フレーム
+	params.wholeFrame = 35;        // 後隙 35フレーム
+	return params;
+}
+
 // ==========================================================
 // MEWTWO ATTACK 処理
 // ==========================================================
@@ -120,19 +128,22 @@ void UpdateMewtwoMove(Pkmn* pkmn) {
 	//pkmn->blueprint.type != PKMN_MEWTWO の場合は無視
 	if (pkmn->blueprint.type != PKMN_MEWTWO) return;
 
-	//フレームで管理する場合は++　positionは速度xフレーム時間なのでgetFrameTime()する
-	pkmn->timer++;
+	// MEWTWO MOVE のパラメータを取得
+	MewtwoMoveParameters params = GetMewtwoMoveParameters();
+
+	pkmn->speed = { 0.0f, 0.0f };
+	pkmn->frameCounter++; // ➔ 毎フレーム「1」ずつ純粋に増える
 
 	//前隙15f
-	if (pkmn->timer <= 15) {
-		pkmn->speed = { 0.0f, 0.0f };
+	if (pkmn->frameCounter <= params.startupFrame) {
+		pkmn->isVisible = true;
 	}
 
 	//10f消える　次の場所を探す
-	else if (pkmn->timer <= 25) {
+	else if (pkmn->frameCounter <= params.executeFrame) {
 		pkmn->isVisible = false;    //描画と当たり判定を消す
 
-		if (pkmn->timer == 16) {
+		if (pkmn->frameCounter == params.startupFrame + 1) {
 			Vector2 nextPos;
 			bool isOverlapping = true;
 
@@ -153,12 +164,12 @@ void UpdateMewtwoMove(Pkmn* pkmn) {
 		}
 	}
 	//後隙10f
-	else if (pkmn->timer <= 35) {
+	else if (pkmn->frameCounter <= params.wholeFrame) {
 		pkmn->isVisible = true;   //描画と当たり判定を復活
 		pkmn->speed = { 0.0f, 0.0f };
 	}
 	else {
-		pkmn->timer = 0.0f;
+		pkmn->frameCounter = 0;
 		int choice = GetRandomValue(1, 2);
 		if (choice == 1) {
 			pkmn->state = PKMN_STATE_ATTACK;

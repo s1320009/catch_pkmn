@@ -37,6 +37,7 @@ typedef struct {
 	Vector2 position;	// ポケモンの位置
 	Vector2 speed;		// ポケモンの"現在の"移動速度
 	PkmnState state;	// ポケモンの状態
+	int frameCounter;   // ポケモンの技をフレームで管理
 	float timer;		// ポケモンの状態遷移用タイマー
 	float rotation;		// ポケモンの回転角度（度）- MEWTWO ATTACK用
 	int attackPhase;	// ATTACK状態のフェーズ（0=初回発射, 1=2回目発射）

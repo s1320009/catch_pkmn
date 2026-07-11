@@ -10,7 +10,9 @@ Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos) {
 	pkmn.position = startPos;
 	pkmn.speed = { 0.0f, 0.0f };
 	pkmn.state = PKMN_STATE_THINK;
+
 	pkmn.timer = 0.0f;
+	pkmn.frameCounter = 0;                     // フレームカウンター
 	pkmn.rotation = 0.0f;					 // 回転角度
 	pkmn.attackPhase = 0;					 // ATTACK フェーズ
 	pkmn.isVisible = true;					 // 画面内にいる状態

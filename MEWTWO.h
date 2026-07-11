@@ -92,6 +92,12 @@ typedef struct {
 									 // 例：3.0f = 3秒後に消える
 } MewtwoAttackParameters;
 
+typedef struct {
+	int startupFrame;              //前隙
+	int executeFrame;              //後隙抜き時間
+	int wholeFrame;                //後隙
+} MewtwoMoveParameters;
+
 // ==========================================================
 // Projectile関連関数
 // ==========================================================
@@ -150,3 +156,6 @@ ProjectileManager* GetMewtwoProjectileManager();
 
 // MEWTWO ATTACK パラメータを取得
 MewtwoAttackParameters GetMewtwoAttackParameters();
+
+// MEWTWO MOVE パラメータを取得
+MewtwoMoveParameters GetMewtwoMoveParameters();
