@@ -177,27 +177,44 @@ void UpdatePkmn(Pkmn* pkmn) {
 			pkmn->frameCounter++; // ➔ 毎フレーム「1」ずつ純粋に増える
 
 			if (pkmn->frameCounter == 1) {
-				// 🎲 確率分岐：1から４のサイコロを振る
-				int choice = GetRandomValue(1, 4);
-				if (choice == 1) {
-					// 1/4の確率で上方向にダッシュ
-					pkmn->speed.x = 0.0f;
-					pkmn->speed.y = -pkmn->blueprint.dashSpeed;
+				int safeChoices[4];
+				int safeCount = 0;
+
+				bool isRightSafe = (pkmn->position.x + pkmn->blueprint.radius < GetScreenWidth());
+				bool isLeftSafe = (pkmn->position.x - pkmn->blueprint.radius > 0);
+				bool isUpSafe = (pkmn->position.y - pkmn->blueprint.radius > 0);
+				bool isDownSafe = (pkmn->position.y + pkmn->blueprint.radius < GetScreenHeight());
+
+				if (isRightSafe) { safeChoices[safeCount] = 1; safeCount++; } //1 = 右
+				if (isLeftSafe) { safeChoices[safeCount] = 2; safeCount++; } //2 = 左
+				if (isUpSafe) { safeChoices[safeCount] = 3; safeCount++; } //3 = 上
+				if (isDownSafe) { safeChoices[safeCount] = 4; safeCount++; } //4 = 下
+
+				int finalChoice = 1;  //finalChoiceに1を入れたのもそのため
+				if (safeCount > 0) {  //GetRandomValueが右の引数のほうが小さくなってバグが起きるのを防ぐため　
+					int randomIndex = GetRandomValue(0, safeCount - 1);
+					finalChoice = safeChoices[randomIndex];
 				}
-				else if (choice == 2) {
-					// 1/4の確率で下方向にダッシュ
-					pkmn->speed.x = 0.0f;
-					pkmn->speed.y = pkmn->blueprint.dashSpeed;
-				}
-				else if (choice == 3) {
-					// 1/4の確率で右方向にダッシュ
-					pkmn->speed.x = pkmn->blueprint.dashSpeed;
+
+				if (finalChoice == 1) {
+					pkmn->speed.x = pkmn->blueprint.dashSpeed;  //右ダッシュ
 					pkmn->speed.y = 0.0f;
 				}
-				else if (choice == 4) {
-					// 1/4の確率で左方向にダッシュ
-					pkmn->speed.x = -pkmn->blueprint.dashSpeed;
+
+				if (finalChoice == 2) {
+					pkmn->speed.x = - pkmn->blueprint.dashSpeed;  //左ダッシュ
 					pkmn->speed.y = 0.0f;
+				}
+
+
+				if (finalChoice == 3) {
+					pkmn->speed.x = 0.0f;
+					pkmn->speed.y = - pkmn->blueprint.dashSpeed;  //上ダッシュ
+				}
+
+				if (finalChoice == 4) {
+					pkmn->speed.x = 0.0f;
+					pkmn->speed.y = pkmn->blueprint.dashSpeed;  //下ダッシュ
 				}
 			}
 			
@@ -208,12 +225,12 @@ void UpdatePkmn(Pkmn* pkmn) {
 				pkmn->frameCounter = 0; // フレームカウンターをリセット
 
 				// 🎲 確率分岐：1か2のサイコロを振る
-				int choice = GetRandomValue(1, 2);
+				int choice = GetRandomValue(1, 3);
 				if (choice == 1) {
-					pkmn->state = PKMN_STATE_THINK;
+					pkmn->state = PKMN_STATE_DASH; // もう一度ダッシュ！（連続ダッシュ）
 				}
 				else {
-					pkmn->state = PKMN_STATE_DASH; // もう一度ダッシュ！（連続ダッシュ）
+					pkmn->state = PKMN_STATE_THINK;
 				}
 			}
 			break;
