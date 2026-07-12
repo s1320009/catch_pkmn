@@ -174,13 +174,38 @@ void UpdatePkmn(Pkmn* pkmn) {
 			// ● DASH: 1秒間だけ走って THINK か DASH へ（ご自身のルール）
 			// --------------------------------------------------
 		case PKMN_STATE_DASH:
-			// エディタで設定したダッシュ速度をそのまま適用
-			pkmn->speed.x = -pkmn->blueprint.dashSpeed;
-			pkmn->speed.y = 0.0f;
+			pkmn->frameCounter++; // ➔ 毎フレーム「1」ずつ純粋に増える
+
+			if (pkmn->frameCounter == 1) {
+				// 🎲 確率分岐：1から４のサイコロを振る
+				int choice = GetRandomValue(1, 4);
+				if (choice == 1) {
+					// 1/4の確率で上方向にダッシュ
+					pkmn->speed.x = 0.0f;
+					pkmn->speed.y = -pkmn->blueprint.dashSpeed;
+				}
+				else if (choice == 2) {
+					// 1/4の確率で下方向にダッシュ
+					pkmn->speed.x = 0.0f;
+					pkmn->speed.y = pkmn->blueprint.dashSpeed;
+				}
+				else if (choice == 3) {
+					// 1/4の確率で右方向にダッシュ
+					pkmn->speed.x = pkmn->blueprint.dashSpeed;
+					pkmn->speed.y = 0.0f;
+				}
+				else if (choice == 4) {
+					// 1/4の確率で左方向にダッシュ
+					pkmn->speed.x = -pkmn->blueprint.dashSpeed;
+					pkmn->speed.y = 0.0f;
+				}
+			}
+			
 
 			// 1秒走ったら
 			if (pkmn->timer >= 1.0f) {
 				pkmn->timer = 0.0f;
+				pkmn->frameCounter = 0; // フレームカウンターをリセット
 
 				// 🎲 確率分岐：1か2のサイコロを振る
 				int choice = GetRandomValue(1, 2);
