@@ -46,6 +46,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 					int choice = GetRandomValue(1, 100);
 
 					if (pkmn->blueprint.type == PKMN_PIKACHU) {
+						pkmn->frameCounter = 0; // PIKACHU のフレームカウンターをリセット
 						// PIKACHU: ATTACK 30%, DASH 50%, MOVE 20%
 						if (choice <= 30) {
 							pkmn->state = PKMN_STATE_ATTACK;
@@ -58,6 +59,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 						}
 					}
 					else if (pkmn->blueprint.type == PKMN_MEWTWO) {
+						pkmn->frameCounter = 0; // MEWTWO のフレームカウンターをリセット
 						// MEWTWO: ATTACK 70%, DASH 10%, MOVE 20%
 						if (choice <= 70) {
 							pkmn->state = PKMN_STATE_ATTACK;
@@ -77,6 +79,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 					int choice = GetRandomValue(1, 100);
 
 					if (pkmn->blueprint.type == PKMN_PIKACHU) {
+						pkmn->frameCounter = 0; // PIKACHU のフレームカウンターをリセット
 						// PIKACHU: ATTACK 20%, DASH 40%, MOVE 40%
 						if (choice <= 20) {
 							pkmn->state = PKMN_STATE_ATTACK;
@@ -89,6 +92,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 						}
 					}
 					else if (pkmn->blueprint.type == PKMN_MEWTWO) {
+						pkmn->frameCounter = 0; // MEWTWO のフレームカウンターをリセット
 						// MEWTWO: ATTACK 10%, DASH 40%, MOVE 50%
 						if (choice <= 10) {
 							pkmn->state = PKMN_STATE_ATTACK;
@@ -117,6 +121,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 			else {
 				// 通常の ATTACK（PIKACHU等）
 				if (pkmn->timer >= pkmn->blueprint.attackduration) {
+					pkmn->frameCounter = 0; // フレームカウンターをリセット	
 					pkmn->timer = 0.0f;
 					pkmn->state = PKMN_STATE_STAY;
 				}
@@ -127,6 +132,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 			// ● MOVE: 進行方向に少しだけ移動する
 			// --------------------------------------------------
 		case PKMN_STATE_MOVE:
+
 			if (pkmn->blueprint.type == PKMN_MEWTWO) {
 				UpdateMewtwoMove(pkmn);
 			}
@@ -136,6 +142,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 			}
 
 			if (pkmn->timer >= pkmn->blueprint.moveduration) {
+				pkmn->frameCounter = 0; // フレームカウンターをリセット
 				pkmn->timer = 0.0f;
 				pkmn->state = PKMN_STATE_THINK;
 			}
@@ -149,6 +156,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 
 			// エディタ設定の待機時間に達したら
 			if (pkmn->timer >= pkmn->blueprint.stayduration) {
+				pkmn->frameCounter = 0; // フレームカウンターをリセット
 				pkmn->timer = 0.0f;
 
 				// 🎲 確率分岐：1か2のサイコロを振る
@@ -186,9 +194,53 @@ void UpdatePkmn(Pkmn* pkmn) {
 			break;
 	}
 
-	// 位置の更新
-	pkmn->position.x += pkmn->speed.x;
-	pkmn->position.y += pkmn->speed.y;
+	// ==========================================================
+// 1. 【X軸方向】だけの未来予測チェック
+// ==========================================================
+	Vector2 futurePosX = pkmn->position;
+	futurePosX.x += pkmn->speed.x; // Xだけ動かしてみる
+
+	bool canMoveX = true;
+
+	// X方向の画面枠チェック
+	if (futurePosX.x - pkmn->blueprint.radius < 0 ||
+		futurePosX.x + pkmn->blueprint.radius > GetScreenWidth())
+	{
+		canMoveX = false;
+	}
+
+	// ==========================================================
+	// 2. 【Y軸方向】だけの未来予測チェック
+	// ==========================================================
+	Vector2 futurePosY = pkmn->position;
+	futurePosY.y += pkmn->speed.y; // Yだけ動かしてみる
+
+	bool canMoveY = true;
+
+	// Y方向の画面枠チェック
+	if (futurePosY.y - pkmn->blueprint.radius < 0 ||
+		futurePosY.y + pkmn->blueprint.radius > GetScreenHeight())
+		// ...
+	{
+		canMoveY = false;
+	}
+
+	// ==========================================================
+	// 3. 安全が確認できた軸【だけ】を実際に動かす！
+	// ==========================================================
+	if (canMoveX) {
+		pkmn->position.x = futurePosX.x;
+	}
+	else {
+		pkmn->speed.x = 0.0f; // ぶつかったらX速度は殺す
+	}
+
+	if (canMoveY) {
+		pkmn->position.y = futurePosY.y;
+	}
+	else {
+		pkmn->speed.y = 0.0f; // ぶつかったらY速度は殺す
+	}
 }
 
 // ==========================================================
