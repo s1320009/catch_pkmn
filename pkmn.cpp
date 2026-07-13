@@ -177,13 +177,16 @@ void UpdatePkmn(Pkmn* pkmn) {
 			pkmn->frameCounter++; // ➔ 毎フレーム「1」ずつ純粋に増える
 
 			if (pkmn->frameCounter == 1) {
+				float radius = pkmn->blueprint.radius;
+				float speed = pkmn->blueprint.dashSpeed;
+
+				bool isRightSafe = (pkmn->position.x + speed + radius < GetScreenWidth());
+				bool isLeftSafe = (pkmn->position.x - speed - radius > 0);
+				bool isUpSafe = (pkmn->position.y - speed - radius > 0);
+				bool isDownSafe = (pkmn->position.y + speed + radius < GetScreenHeight());
+
 				int safeChoices[4];
 				int safeCount = 0;
-
-				bool isRightSafe = (pkmn->position.x + pkmn->blueprint.radius < GetScreenWidth());
-				bool isLeftSafe = (pkmn->position.x - pkmn->blueprint.radius > 0);
-				bool isUpSafe = (pkmn->position.y - pkmn->blueprint.radius > 0);
-				bool isDownSafe = (pkmn->position.y + pkmn->blueprint.radius < GetScreenHeight());
 
 				if (isRightSafe) { safeChoices[safeCount] = 1; safeCount++; } //1 = 右
 				if (isLeftSafe) { safeChoices[safeCount] = 2; safeCount++; } //2 = 左
