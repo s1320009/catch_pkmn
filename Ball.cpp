@@ -16,7 +16,8 @@ Ball CreateBall() {
     ball.color = MAROON;                     // 色も固定
 
     //ゲージを左においておくための変数
-    ball.isAimingLeft = false;
+	ball.isAimingLeft = false;              //ゲージを左においておくための変数
+	ball.isAimingDown = false;              //ゲージを下においておくための変数
 	ball.outTimer = 0.0f;                       //画面外に出たときのタイマー
 
     // ステートマシンの初期化
@@ -24,7 +25,7 @@ Ball CreateBall() {
     ball.chargePower = { 0.0f, 0.0f };
     ball.chargeGaugeX = 0.0f;
     ball.chargeGaugeY = 0.0f;
-    ball.isGaugeIncreasing = true;
+	ball.isGaugeIncreasing = true;           // ゲージが増加中か減少中かのフラグ
 
     return ball;
 }
@@ -38,7 +39,7 @@ void UpdateBall(Ball* ball) {
     float gaugeSpeed = 2.0f * GetFrameTime(); //約0.5秒でMAXになる速度
 
     //ボールの初期位置
-	Vector2 initialPos = { 400.0f,  550.0f };
+	Vector2 initialPos = { screenWidth/2, screenHeight/2 };
 
 	//ステートマシンの処理
     switch (ball->state) {
@@ -76,7 +77,7 @@ void UpdateBall(Ball* ball) {
 
             //キーが離されたら確定させる
 			if (IsKeyReleased(KEY_A) || IsKeyReleased(KEY_D)) {
-				float directionX = IsKeyReleased(KEY_A) ? -1.0f : 1.0f; // Aキーなら左(-1)、Dキーなら右(+1)
+				float directionX = ball->isAimingLeft ? -1.0f : 1.0f; // Aキーなら左(-1)、Dキーなら右(+1)
                 ball->chargePower.x = ball->chargeGaugeX * MAX_LAUNCH_SPEED * directionX;
 				ball->state = BALL_WAIT_Y;
 			}
@@ -88,9 +89,10 @@ void UpdateBall(Ball* ball) {
                 ball->state = BALL_WAIT_X;
             }
             // WかSが押されたら縦チャージ開始
-            else if (IsKeyDown(KEY_W)) {
+            else if (IsKeyDown(KEY_W) || IsKeyDown(KEY_S)) {
                 ball->state = BALL_CHARGE_Y;
                 ball->isGaugeIncreasing = true;
+                ball->isAimingDown = IsKeyDown(KEY_S) ? true : false;
             }
             break;
 
@@ -119,8 +121,9 @@ void UpdateBall(Ball* ball) {
             }
 
 			//キーが離されたら確定させる
-			if (IsKeyReleased(KEY_W)) {
-				ball->chargePower.y = ball->chargeGaugeY * MAX_LAUNCH_SPEED * UP;
+			if (IsKeyReleased(KEY_W) || IsKeyReleased(KEY_S)) {
+				float directionY = ball->isAimingDown ? 1.0f : -1.0f; // Sキーなら下(+1)、Wキーなら上(-1)
+				ball->chargePower.y = ball->chargeGaugeY * MAX_LAUNCH_SPEED * directionY;
 				ball->state = BALL_AIMING;
 			}
             break;
@@ -180,6 +183,8 @@ void UpdateBall(Ball* ball) {
 void DrawBall(Ball ball) {
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
+    float gaugeMax = 200.0f; // ゲージの最大値
+	float gaugeThickness = 20.0f; // ゲージの厚み
     
     // ボール本体を描画
 	DrawCircleV(ball.position, ball.radius, ball.color);
@@ -194,35 +199,51 @@ void DrawBall(Ball ball) {
     // 2. 状態に応じたチャージゲージUIの描画
     // 横チャージ中、またはそれ以降の状態なら画面下に横ゲージを表示
     if (ball.state >= BALL_CHARGE_X && ball.state <= BALL_AIMING) {
-        float gaugeMaxW = 200.0f; // ゲージの最大値
-        int gaugeW = (int)(gaugeMaxW * ball.chargeGaugeX);
+        int gaugeW = (int)(gaugeMax * ball.chargeGaugeX);
 
 		//ゲージの描画位置を計算
+		float bgY = ball.position.y - gaugeThickness / 2;
+		float rectY = bgY;
         float bgX = 0;
         float rectX = 0;
 
         if (ball.isAimingLeft) {
-            bgX = 400 - ball.radius - 15 - gaugeMaxW;
+            bgX = ball.position.x - ball.radius - 15 - gaugeMax;
             // ゲージは右から左に伸びるように見せるため、右端からゲージ幅を引く
-            rectX = (400 - ball.radius - 15) - gaugeW;
+            rectX = (screenWidth/2 - ball.radius - 15) - gaugeW;
 		}
 		else {
-			bgX = 400 + ball.radius + 15;
+			bgX = ball.position.x + ball.radius + 15;
 			rectX = bgX;
 		}
 
-        DrawRectangle(bgX, screenHeight - 60, gaugeMaxW, 20, LIGHTGRAY);
-        DrawRectangle(rectX, screenHeight - 60, gaugeW, 20, ORANGE);
-        DrawText("X POWER", bgX, screenHeight - 85, 15, DARKGRAY);
+        DrawRectangle(bgX, ball.position.y - gaugeThickness / 2, gaugeMax, gaugeThickness, LIGHTGRAY);
+        DrawRectangle(rectX, ball.position.y - gaugeThickness / 2, gaugeW, gaugeThickness, ORANGE);
     }
 
     // 縦チャージ中、またはそれ以降の状態なら画面左に縦ゲージを表示
     if (ball.state >= BALL_CHARGE_Y && ball.state <= BALL_AIMING) {
-        DrawRectangle(390, screenHeight - 280, 20, 200, LIGHTGRAY);
-        int gaugeH = (int)(200 * ball.chargeGaugeY);
+        int gaugeH = (int)(gaugeMax * ball.chargeGaugeY);
+
+		// ゲージの描画位置を計算
+		float bgX = ball.position.x - gaugeThickness / 2;
+		float rectX = bgX;
+		float bgY = 0;
+		float rectY = 0;
+
+		if (ball.isAimingDown) {
+			bgY = ball.position.y + ball.radius + 15;
+			rectY = bgY;
+		}
+		else {
+			bgY = ball.position.y - ball.radius - 15 - gaugeMax;
+			// ゲージは下から上に伸びるように見せるため、下端からゲージ高さを引く
+			rectY = (screenHeight / 2 - ball.radius - 15) - gaugeH;
+		}
+
+        DrawRectangle(bgX, bgY, gaugeThickness, gaugeMax, LIGHTGRAY);
         // 下から上に向かって伸びるように座標を計算
-        DrawRectangle(390, screenHeight - 80 - gaugeH, 20, gaugeH, LIME);
-        DrawText("Y POWER", 390, screenHeight - 305, 15, DARKGRAY);
+        DrawRectangle(rectX, rectY, gaugeThickness, gaugeH, LIME);
     }
 
     // 3. 発射予測線の破線描画

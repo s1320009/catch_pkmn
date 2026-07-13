@@ -19,6 +19,7 @@ typedef struct {
 	Color color;
 
 	bool isAimingLeft;		 //ゲージを左においておくための変数
+	bool isAimingDown;		 //ゲージを下においておくための変数
 	float outTimer;			 //画面外に出たときのタイマー
 
 	BallLaunchState state;	//現在の発射状態
