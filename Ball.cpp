@@ -217,8 +217,8 @@ void DrawBall(Ball ball) {
 			rectX = bgX;
 		}
 
-        DrawRectangle(bgX, ball.position.y - gaugeThickness / 2, gaugeMax, gaugeThickness, LIGHTGRAY);
-        DrawRectangle(rectX, ball.position.y - gaugeThickness / 2, gaugeW, gaugeThickness, ORANGE);
+        DrawRectangle(bgX, bgY, gaugeMax, gaugeThickness, LIGHTGRAY);
+        DrawRectangle(rectX, rectY, gaugeW, gaugeThickness, ORANGE);
     }
 
     // 縦チャージ中、またはそれ以降の状態なら画面左に縦ゲージを表示
