@@ -143,6 +143,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MEWTWO.cpp" />
     <ClCompile Include="pkmn.cpp" />
+    <ClCompile Include="player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -152,6 +153,7 @@
     <ClInclude Include="Ball.h" />
     <ClInclude Include="MEWTWO.h" />
     <ClInclude Include="pkmn.h" />
+    <ClInclude Include="player.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,6 +2,7 @@
 #include "Ball.h"
 #include "pkmn.h"
 #include "MEWTWO.h"
+#include "player.h"
 
 #define TODAY_COMMENT ((const char*)u8"karaage")
 #define WINDOW_WIDTH 1280
@@ -14,6 +15,7 @@ int main() {
 	SetTargetFPS(60);
 
 	//初期化
+	Player player = CreatePlayer();
 	Ball ball = CreateBall();
 	
 	PkmnBlueprint pikaSetting = {};				//{0}だとenum型で引っかかってエラーになるので{}で初期化する
@@ -44,15 +46,20 @@ int main() {
 
 	while (!WindowShouldClose()) {
 		// Update
+		UpdatePlayer(&player);
 		UpdateBall(&ball);
 		UpdatePkmn(&pika);
 		UpdatePkmn(&m2);
 		UpdateProjectileManager(GetMewtwoProjectileManager());
 
+		// 🛡️ 【ここに追加！】プレイヤーがミュウツーの弾に当たったか毎フレームチェックする
+		CheckPlayerHurt(GetMewtwoProjectileManager(), &player);
+
 		// Draw
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
 		DrawTextEx(japaneseFont, TODAY_COMMENT, { 190, 200 }, 20, 1, BLUE);
+		DrawPlayer(player);
 		DrawBall(ball);
 		DrawPkmn(pika);
 		DrawPkmn(m2);
