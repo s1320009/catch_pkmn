@@ -185,13 +185,36 @@ void UpdatePkmn(Pkmn* pkmn) {
 				bool isUpSafe = (pkmn->position.y - speed - radius > 0);
 				bool isDownSafe = (pkmn->position.y + speed + radius < GetScreenHeight());
 
-				int safeChoices[4];
+				// 【新機能】「ある程度端に近いか」を判定する基準（100px以内)
+				float border = 100.0f;
+				bool isNearRight = (pkmn->position.x > GetScreenWidth() - border);
+				bool isNearLeft = (pkmn->position.x < border);
+				bool isNearTop = (pkmn->position.y < border);
+				bool isNearBottom = (pkmn->position.y > GetScreenHeight() - border);
+
+				int safeChoices[8];
 				int safeCount = 0;
 
-				if (isRightSafe) { safeChoices[safeCount] = 1; safeCount++; } //1 = 右
-				if (isLeftSafe) { safeChoices[safeCount] = 2; safeCount++; } //2 = 左
-				if (isUpSafe) { safeChoices[safeCount] = 3; safeCount++; } //3 = 上
-				if (isDownSafe) { safeChoices[safeCount] = 4; safeCount++; } //4 = 下
+				if (isRightSafe) { 
+					safeChoices[safeCount] = 1; safeCount++; 
+					//もし反対側の壁に近いなら確率を２倍にする
+					if (isNearLeft) { safeChoices[safeCount] = 1; safeCount++; }
+				} //1 = 右
+				if (isLeftSafe) { 
+					safeChoices[safeCount] = 2; safeCount++;
+					//もし反対側の壁に近いなら確率を２倍にする
+					if (isNearRight) { safeChoices[safeCount] = 2; safeCount++; }
+				} //2 = 左
+				if (isUpSafe) { 
+					safeChoices[safeCount] = 3; safeCount++;
+					//もし反対側の壁に近いなら確率を２倍にする
+					if (isNearBottom) { safeChoices[safeCount] = 3; safeCount++; }
+				} //3 = 上
+				if (isDownSafe) { 
+					safeChoices[safeCount] = 4; safeCount++;
+					//もし反対側の壁に近いなら確率を２倍にする
+					if (isNearTop) { safeChoices[safeCount] = 4; safeCount++; }
+				} //4 = 下
 
 				int finalChoice = 1;  //finalChoiceに1を入れたのもそのため
 				if (safeCount > 0) {  //GetRandomValueが右の引数のほうが小さくなってバグが起きるのを防ぐため　
@@ -199,25 +222,16 @@ void UpdatePkmn(Pkmn* pkmn) {
 					finalChoice = safeChoices[randomIndex];
 				}
 
-				if (finalChoice == 1) {
-					pkmn->speed.x = pkmn->blueprint.dashSpeed;  //右ダッシュ
-					pkmn->speed.y = 0.0f;
-				}
+				if (finalChoice == 1) { pkmn->speed = { speed, 0.0f }; }
 
-				if (finalChoice == 2) {
-					pkmn->speed.x = - pkmn->blueprint.dashSpeed;  //左ダッシュ
-					pkmn->speed.y = 0.0f;
+				if (finalChoice == 2) { pkmn->speed = { -speed, 0.0f };  //左ダッシュ
 				}
 
 
-				if (finalChoice == 3) {
-					pkmn->speed.x = 0.0f;
-					pkmn->speed.y = - pkmn->blueprint.dashSpeed;  //上ダッシュ
+				if (finalChoice == 3) { pkmn->speed = { 0.0f, -speed };  //上ダッシュ
 				}
 
-				if (finalChoice == 4) {
-					pkmn->speed.x = 0.0f;
-					pkmn->speed.y = pkmn->blueprint.dashSpeed;  //下ダッシュ
+				if (finalChoice == 4) { pkmn->speed = { 0.0f, speed };  //下ダッシュ
 				}
 			}
 			

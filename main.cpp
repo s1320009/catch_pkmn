@@ -4,8 +4,8 @@
 #include "MEWTWO.h"
 
 #define TODAY_COMMENT ((const char*)u8"karaage")
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1280
+#define WINDOW_HEIGHT 720
 
 
 int main() {
