@@ -83,6 +83,20 @@ void UpdatePlayer(Player* player) {
 	}
 }
 
+void DrawPlayer(Player player) {
+	// プレイヤーの状態に応じて描画する
+	switch (player.state) {
+	case PLAYER_STATE_FINE:
+		if (!player.isInvincible) {
+			DrawRectangleV({ player.position.x - player.size.x / 2, player.position.y - player.size.y / 2 }, player.size, player.color);
+		}
+		break;
+	case PLAYER_STATE_DEAD:
+		// プレイヤーが死んでいる場合の描画（必要に応じて追加）
+		break;
+	}
+}
+
 void CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManager, Player* player) {
 	//無敵時間を減らす
 	if (player->invincibleFrame > 0) {
@@ -133,19 +147,5 @@ void CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManager, Playe
 				}
 			}
 		}
-	}
-}
-
-void DrawPlayer(Player player) {
-	// プレイヤーの状態に応じて描画する
-	switch (player.state) {
-	case PLAYER_STATE_FINE:
-		if (!player.isInvincible) {
-			DrawRectangleV({ player.position.x - player.size.x / 2, player.position.y - player.size.y / 2 }, player.size, player.color);
-		}
-		break;
-	case PLAYER_STATE_DEAD:
-		// プレイヤーが死んでいる場合の描画（必要に応じて追加）
-		break;
 	}
 }

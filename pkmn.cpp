@@ -23,7 +23,7 @@ Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos) {
 	return pkmn;
 }
 
-void UpdatePkmn(Pkmn* pkmn) {
+void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 	// 状態遷移の処理
 	pkmn->timer += GetFrameTime(); // タイマーを更新
 
@@ -34,15 +34,14 @@ void UpdatePkmn(Pkmn* pkmn) {
 				pkmn->timer = 0.0f;		// タイマーをリセット
 
 				// マウスカーソルとの距離を計算
-				Vector2 mousePos = GetMousePosition();
-				float dx = pkmn->position.x - mousePos.x;
-				float dy = pkmn->position.y - mousePos.y;
-				float distanceToMouse = sqrtf(dx * dx + dy * dy);
+				float dx = pkmn->position.x - playerPos.x;
+				float dy = pkmn->position.y - playerPos.y;
+				float distanceToPlayer = sqrtf(dx * dx + dy * dy);
 
 				// ポケモンタイプに応じて確率を変更
-				if (distanceToMouse < 200.0f) {
+				if (distanceToPlayer < 200.0f) {
 					// =========================================
-					// 【マウスが近い場合】
+					// 【プレイヤーが近い場合】
 					// =========================================
 					int choice = GetRandomValue(1, 100);
 
@@ -242,7 +241,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 				pkmn->timer = 0.0f;
 				pkmn->frameCounter = 0; // フレームカウンターをリセット
 
-				// 🎲 確率分岐：1か2のサイコロを振る
+				// 🎲 確率分岐：1から3のサイコロを振る
 				int choice = GetRandomValue(1, 3);
 				if (choice == 1) {
 					pkmn->state = PKMN_STATE_DASH; // もう一度ダッシュ！（連続ダッシュ）
@@ -352,12 +351,12 @@ void AddPkmn(PkmnManager* manager, Pkmn pkmn) {
 // ==========================================================
 // 6. PkmnManager の更新
 // ==========================================================
-void UpdatePkmnManager(PkmnManager* manager) {
+void UpdatePkmnManager(PkmnManager* manager, Vector2 playerPos) {
 	for (int i = 0; i < manager->count; i++) {
 		// アクティブなポケモンだけを更新
 		if (!manager->list[i].isActive) continue;		//アクティブじゃないやつをスキップする
 
-		UpdatePkmn(&manager->list[i]);
+		UpdatePkmn(&manager->list[i], playerPos);
 	}
 }
 
@@ -370,4 +369,16 @@ void DrawPkmnManager(PkmnManager manager) {
 		if (!manager.list[i].isActive) continue;		//アクティブじゃないやつをスキップする
 		DrawPkmn(manager.list[i]);
 	}
+}
+
+// ==========================================================
+// 8. Activeなポケモンがいるかどうかをチェック
+// ==========================================================
+bool IsAnyPkmnActive(PkmnManager manager) {
+	for (int i = 0; i < manager.count; i++) {
+		if (manager.list[i].isActive) {
+			return true; // アクティブなポケモンが1体でもいたら true を返す
+		}
+	}
+	return false; // アクティブなポケモンがいなければ false を返す
 }

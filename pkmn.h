@@ -60,7 +60,7 @@ typedef struct {
 // 変更後:
 Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos);
 
-void UpdatePkmn(Pkmn* pkmn);
+void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos);
 void DrawPkmn(Pkmn pkmn);
 
 // ==========================================================
@@ -68,5 +68,6 @@ void DrawPkmn(Pkmn pkmn);
 // ==========================================================
 PkmnManager CreatePkmnManager();
 void AddPkmn(PkmnManager* manager, Pkmn pkmn);
-void UpdatePkmnManager(PkmnManager* manager);
+void UpdatePkmnManager(PkmnManager* manager, Vector2 playerPos);
 void DrawPkmnManager(PkmnManager manager);
+bool IsAnyPkmnActive(PkmnManager manager);	//アクティブなポケモンがいるかどうかを返す
