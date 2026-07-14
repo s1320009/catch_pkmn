@@ -8,6 +8,38 @@
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
 
+void CheckCollisions(Ball* ball, PkmnManager* pkmnManager, Player* player) {
+
+	// 🛡️ 1. プレイヤーと敵・弾の当たり判定（CheckPlayerHurt を呼び出す）
+	CheckPlayerHurt(GetMewtwoProjectileManager(), pkmnManager, player);
+
+	// ⚽ 2. ボールとポケモンの当たり判定
+	if (ball->state == BALL_FLYING) {
+		for (int i = 0; i < pkmnManager->count; i++) {
+			Pkmn* enemy = &pkmnManager->list[i];
+
+			if (enemy->isActive && enemy->isVisible) {
+				// 円（ボール）と円（ポケモン）の衝突をチェック！
+				if (CheckCollisionCircles(ball->position, ball->radius, enemy->position, enemy->blueprint.radius)) {
+
+					// 💥 ポケモンに当たったのでボールを跳ね返らせるステートにする！
+					ball->state = BALL_BOUNCE;
+
+					// ① 真上に向かってピョコッと跳ねる初速を与える（上はマイナス）
+					ball->speed.x = 0.0f;
+					ball->speed.y = -6.0f; // ★この数字を大きくすると高く跳ねます
+
+					// ② 当たった瞬間のY座標を「天井」の基準として記録しておく！　BOUNCEのほうで初期化するとずっと回るからこっち
+					ball->bounceStartY = ball->position.y;
+					// ポケモン側を倒す（非アクティブにする）
+					enemy->isActive = false;
+
+					break;
+				}
+			}
+		}
+	}
+}
 
 int main() {
 	// 画面の初期化
@@ -55,8 +87,7 @@ int main() {
 		UpdatePkmnManager(&pkmnManager);
 		UpdateProjectileManager(GetMewtwoProjectileManager());
 
-		// 🛡️ 【ここに追加！】プレイヤーがミュウツーの弾に当たったか毎フレームチェックする
-		CheckPlayerHurt(GetMewtwoProjectileManager(), &pkmnManager, &player);
+		CheckCollisions(&ball, &pkmnManager, &player);
 
 		// Draw
 		BeginDrawing();

@@ -4,7 +4,7 @@
 //windowは上がマイナス
 const float UP = -1.0f;
 // 最大チャージ時の初速（必要に応じて調整してください）
-const float MAX_LAUNCH_SPEED = 40.0f;
+const float MAX_LAUNCH_SPEED = 50.0f;
 // 飛行中の減速係数（摩擦。1.0未満で徐々に減速）
 const float BALL_FRICTION = 0.98f;
 
@@ -18,13 +18,14 @@ Ball CreateBall() {
     //ゲージを左においておくための変数
 	ball.isAimingLeft = false;              //ゲージを左においておくための変数
 	ball.isAimingDown = false;              //ゲージを下においておくための変数
-	ball.outTimer = 0.0f;                       //画面外に出たときのタイマー
+	ball.outTimer = 0.5f;                       //画面外に出たときのタイマー
+	ball.bounceStartY = 0.0f;                     //跳ね返ったときのY座標の基準
 
     // ステートマシンの初期化
     ball.state = BALL_WAIT_X;
     ball.chargePower = { 0.0f, 0.0f };
     ball.chargeGaugeX = 0.0f;
-    ball.chargeGaugeY = 0.0f;
+    ball.chargeGaugeY = 0.5f;
 	ball.isGaugeIncreasing = true;           // ゲージが増加中か減少中かのフラグ
 
     return ball;
@@ -179,10 +180,26 @@ void UpdateBall(Ball* ball, Player* player) {
             break;
         }       //小部屋終わり
 
+		case BALL_BOUNCE:
+            // ① 【重力】上に向かっている速度に、毎フレーム下向きの力を足す
+            // 60FPSなら、毎フレーム 0.3f ずつ速度が下向き（プラス）に引っ張られます
+            ball->speed.y += 0.3f;
+
+            // ② 実際にボールを移動させる
+            ball->position.x += ball->speed.x;
+            ball->position.y += ball->speed.y;
+
+            // ③ 【着地チェック】ボールが落ちてきて、当たった時の高さ（基準）を超えたら終了！
+            // ※「速度が下向き（> 0）」かつ「元の高さより下（>=）」になったら確実に着地したと判定できます
+            if (ball->speed.y > 0.0f && ball->position.y >= ball->bounceStartY) {
+                ball->state = BALL_WAIT_X; // 手元（待機状態）に戻る
+            }
+            break;
+
 		case BALL_OUT:
 			// 画面外に出たら、一定時間経過後に手元に戻す
-			ball->outTimer += GetFrameTime();
-			if (ball->outTimer >= 0.5f) { // 0.5秒経過したら手元に戻す
+			ball->outTimer -= GetFrameTime();
+			if (ball->outTimer <= 0.0f) { // 0.5秒経過したら手元に戻す
 				ball->state = BALL_WAIT_X;
 			}
             break;
@@ -196,8 +213,12 @@ void DrawBall(Ball ball) {
 	float gaugeThickness = 20.0f; // ゲージの厚み
     
     // WAIT以外でボール本体を描画
-    if (ball.state != BALL_WAIT_X && ball.state != BALL_WAIT_Y) {
+    if (ball.state != BALL_WAIT_X && ball.state != BALL_WAIT_Y && ball.state != BALL_OUT) {
         DrawCircleV(ball.position, ball.radius, ball.color);
+    }
+
+    if (ball.state == BALL_BOUNCE) {
+		DrawCircleV(ball.position, ball.radius, BLACK);
     }
 
     if (ball.state == BALL_WAIT_X) {

@@ -308,7 +308,7 @@ void UpdatePkmn(Pkmn* pkmn) {
 // ==========================================================
 void DrawPkmn(Pkmn pkmn) {
 	//見えなくなる
-	if(pkmn.isVisible == false) return;
+	if(pkmn.isVisible == false || !pkmn.isActive) return;
 
 	// 状態（State）に応じて色や大きさを変えて「固有の行動」を視覚化する
 	if (pkmn.state == PKMN_STATE_ATTACK && pkmn.blueprint.type == PKMN_MEWTWO) {
