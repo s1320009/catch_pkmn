@@ -1,6 +1,7 @@
 #pragma once
 #include "raylib.h"
 #include "MEWTWO.h"
+#include "pkmn.h"
 
 // プレイヤーの状態を表す列挙型
 typedef enum {
@@ -15,7 +16,8 @@ typedef struct {
 	Vector2 size;		// プレイヤーのサイズ
 	Color color;		// プレイヤーの色
 	int life;			// プレイヤーの残りライフ
-	float invincibleTimer; // 無敵時間のタイマー
+	bool isInvincible;	// プレイヤーが無敵状態かどうか
+	int invincibleFrame; // 無敵時間のタイマー
 	PlayerState state;	// プレイヤーの状態
 } Player;
 
@@ -23,4 +25,4 @@ Player CreatePlayer();
 void UpdatePlayer(Player* player);
 void DrawPlayer(Player player);
 
-void CheckPlayerHurt(ProjectileManager* manager, Player* player);
+void CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManager, Player* player);

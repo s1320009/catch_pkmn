@@ -41,9 +41,16 @@ typedef struct {
 	float timer;		// ポケモンの状態遷移用タイマー
 	float rotation;		// ポケモンの回転角度（度）- MEWTWO ATTACK用
 	bool isVisible;		// ポケモンが画面内にいるかどうか（画面外に出たら false）
+	bool isActive;		// ポケモンが生きているかどうか（消滅したら false）
 
 	PkmnBlueprint blueprint;	// エディタで設定した設計図を丸ごと内包する
 }Pkmn;					// (状態)ゲーム中にリアルタイムで変化するもの(State / Instance)
+
+#define MAX_ACTIVE_POKEMON 10
+typedef struct {
+	Pkmn list[MAX_ACTIVE_POKEMON];  // アクティブなポケモンのリスト
+	int count;						// 現在のアクティブなポケモンの数
+} PkmnManager;
 
 // ==========================================================
 // ★変更点③: 生成関数に「設計図」を渡せるようにする
@@ -55,3 +62,11 @@ Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos);
 
 void UpdatePkmn(Pkmn* pkmn);
 void DrawPkmn(Pkmn pkmn);
+
+// ==========================================================
+// ★変更点④: PkmnManagerの関数を追加
+// ==========================================================
+PkmnManager CreatePkmnManager();
+void AddPkmn(PkmnManager* manager, Pkmn pkmn);
+void UpdatePkmnManager(PkmnManager* manager);
+void DrawPkmnManager(PkmnManager manager);

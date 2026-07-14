@@ -1,5 +1,6 @@
 #pragma once
 #include "raylib.h"
+#include "player.h"
 
 //発射状態のステートマシン
 typedef enum {
@@ -30,5 +31,5 @@ typedef struct {
 } Ball;
 
 Ball CreateBall();
-void UpdateBall(Ball* ball);
+void UpdateBall(Ball* ball, Player* player);
 void DrawBall(Ball ball);

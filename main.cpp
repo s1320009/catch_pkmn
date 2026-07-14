@@ -17,6 +17,7 @@ int main() {
 	//初期化
 	Player player = CreatePlayer();
 	Ball ball = CreateBall();
+	PkmnManager pkmnManager = CreatePkmnManager();
 	
 	PkmnBlueprint pikaSetting = {};				//{0}だとenum型で引っかかってエラーになるので{}で初期化する
 	pikaSetting.type = PKMN_PIKACHU;
@@ -41,19 +42,21 @@ int main() {
 	Pkmn pika = CreatePkmn(pikaSetting, { 700, 300 });
 	Pkmn m2 = CreatePkmn(m2Setting, { 100, 300 });
 
+	AddPkmn(&pkmnManager, pika);
+	AddPkmn(&pkmnManager, m2);
+
 	//ロード
 	Font japaneseFont = LoadFontEx("resources/my_font.ttc", 32, 0, 0);
 
 	while (!WindowShouldClose()) {
 		// Update
 		UpdatePlayer(&player);
-		UpdateBall(&ball);
-		UpdatePkmn(&pika);
-		UpdatePkmn(&m2);
+		UpdateBall(&ball , &player);
+		UpdatePkmnManager(&pkmnManager);
 		UpdateProjectileManager(GetMewtwoProjectileManager());
 
 		// 🛡️ 【ここに追加！】プレイヤーがミュウツーの弾に当たったか毎フレームチェックする
-		CheckPlayerHurt(GetMewtwoProjectileManager(), &player);
+		CheckPlayerHurt(GetMewtwoProjectileManager(), &pkmnManager, &player);
 
 		// Draw
 		BeginDrawing();
@@ -61,8 +64,7 @@ int main() {
 		DrawTextEx(japaneseFont, TODAY_COMMENT, { 190, 200 }, 20, 1, BLUE);
 		DrawPlayer(player);
 		DrawBall(ball);
-		DrawPkmn(pika);
-		DrawPkmn(m2);
+		DrawPkmnManager(pkmnManager);
 		DrawProjectileManager(*GetMewtwoProjectileManager());
 		EndDrawing();
 	}

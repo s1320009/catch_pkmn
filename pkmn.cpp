@@ -15,6 +15,7 @@ Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos) {
 	pkmn.frameCounter = 0;                     // フレームカウンター
 	pkmn.rotation = 0.0f;					 // 回転角度
 	pkmn.isVisible = true;					 // 画面内にいる状態
+	pkmn.isActive = true;					 // 生きている状態
 
 	//パラメータの初期化
 	pkmn.blueprint = blueprint;          // 設計図をコピー
@@ -325,5 +326,48 @@ void DrawPkmn(Pkmn pkmn) {
 	else {
 		// 通常はエディタ設定のまま
 		DrawCircleV(pkmn.position, pkmn.blueprint.radius, pkmn.blueprint.color);
+	}
+}
+
+// ==========================================================
+// 4. PkmnManager の初期化
+// ==========================================================
+PkmnManager CreatePkmnManager() {
+	PkmnManager manager = { 0 }; // すべてのメンバを0で初期化
+	manager.count = 0;           // アクティブなポケモンの数を初期化
+	return manager;
+}
+
+// ==========================================================
+// 5. PkmnManager にポケモンを追加
+// ==========================================================
+void AddPkmn(PkmnManager* manager, Pkmn pkmn) {
+	if (manager->count >= MAX_ACTIVE_POKEMON) return;
+
+	// 追加するポケモンをリストに格納
+	manager->list[manager->count] = CreatePkmn(pkmn.blueprint, pkmn.position);
+	manager->count++;
+}
+
+// ==========================================================
+// 6. PkmnManager の更新
+// ==========================================================
+void UpdatePkmnManager(PkmnManager* manager) {
+	for (int i = 0; i < manager->count; i++) {
+		// アクティブなポケモンだけを更新
+		if (!manager->list[i].isActive) continue;		//アクティブじゃないやつをスキップする
+
+		UpdatePkmn(&manager->list[i]);
+	}
+}
+
+// ==========================================================
+// 7. PkmnManager の描画
+// ==========================================================
+void DrawPkmnManager(PkmnManager manager) {
+	for (int i = 0; i < manager.count; i++) {
+		// アクティブなポケモンだけを描画
+		if (!manager.list[i].isActive) continue;		//アクティブじゃないやつをスキップする
+		DrawPkmn(manager.list[i]);
 	}
 }

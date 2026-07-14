@@ -4,7 +4,7 @@
 //windowは上がマイナス
 const float UP = -1.0f;
 // 最大チャージ時の初速（必要に応じて調整してください）
-const float MAX_LAUNCH_SPEED = 30.0f;
+const float MAX_LAUNCH_SPEED = 40.0f;
 // 飛行中の減速係数（摩擦。1.0未満で徐々に減速）
 const float BALL_FRICTION = 0.98f;
 
@@ -30,7 +30,7 @@ Ball CreateBall() {
     return ball;
 }
 
-void UpdateBall(Ball* ball) {
+void UpdateBall(Ball* ball, Player* player) {
     //消える処理で使う
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
@@ -39,7 +39,7 @@ void UpdateBall(Ball* ball) {
     float gaugeSpeed = 2.0f * GetFrameTime(); //約0.5秒でMAXになる速度
 
     //ボールの初期位置
-	Vector2 initialPos = { screenWidth/2, screenHeight/2 };
+	Vector2 initialPos = player->position;
 
 	//ステートマシンの処理
     switch (ball->state) {
@@ -50,6 +50,12 @@ void UpdateBall(Ball* ball) {
             ball->chargePower = { 0.0f, 0.0f };
             ball->chargeGaugeX = 0.0f;
             ball->chargeGaugeY = 0.0f;
+
+            //プレイヤーが４ンでいるときはchargeできないようにする
+            if (player->state == PLAYER_STATE_DEAD) {
+				ball->state = BALL_WAIT_X;
+				break;
+            }
 
             // AかDが押されたら横チャージ状態へ移行
             if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D)) {
@@ -84,6 +90,7 @@ void UpdateBall(Ball* ball) {
             break;
 
         case BALL_WAIT_Y:
+			ball->position = initialPos;    //手元に戻す
             // Bキーが押されたら、横の受付（最初の状態）に巻き戻す
             if (IsKeyPressed(KEY_B)) {
                 ball->state = BALL_WAIT_X;
@@ -97,6 +104,7 @@ void UpdateBall(Ball* ball) {
             break;
 
         case BALL_CHARGE_Y:
+            ball->position = initialPos;    //手元に戻す
             // Bキーが押されたら、縦のチャージを中断して縦の入力待ちへ巻き戻す
             if (IsKeyPressed(KEY_B)) {
                 ball->chargeGaugeY = 0.0f;
@@ -129,6 +137,7 @@ void UpdateBall(Ball* ball) {
             break;
 
 		case BALL_AIMING:
+            ball->position = initialPos;    //手元に戻す
             // Bキーが押されたら、縦のパワーをクリアして縦の入力待ちに戻る
             if (IsKeyPressed(KEY_B)) {
                 ball->chargePower.y = 0.0f;
@@ -186,8 +195,10 @@ void DrawBall(Ball ball) {
     float gaugeMax = 200.0f; // ゲージの最大値
 	float gaugeThickness = 20.0f; // ゲージの厚み
     
-    // ボール本体を描画
-	DrawCircleV(ball.position, ball.radius, ball.color);
+    // WAIT以外でボール本体を描画
+    if (ball.state != BALL_WAIT_X && ball.state != BALL_WAIT_Y) {
+        DrawCircleV(ball.position, ball.radius, ball.color);
+    }
 
     if (ball.state == BALL_WAIT_X) {
         DrawText("PRESS [A/D] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
@@ -210,7 +221,7 @@ void DrawBall(Ball ball) {
         if (ball.isAimingLeft) {
             bgX = ball.position.x - ball.radius - 15 - gaugeMax;
             // ゲージは右から左に伸びるように見せるため、右端からゲージ幅を引く
-            rectX = (screenWidth/2 - ball.radius - 15) - gaugeW;
+            rectX = (ball.position.x - ball.radius - 15) - gaugeW;
 		}
 		else {
 			bgX = ball.position.x + ball.radius + 15;
@@ -238,7 +249,7 @@ void DrawBall(Ball ball) {
 		else {
 			bgY = ball.position.y - ball.radius - 15 - gaugeMax;
 			// ゲージは下から上に伸びるように見せるため、下端からゲージ高さを引く
-			rectY = (screenHeight / 2 - ball.radius - 15) - gaugeH;
+			rectY = (ball.position.y - ball.radius - 15) - gaugeH;
 		}
 
         DrawRectangle(bgX, bgY, gaugeThickness, gaugeMax, LIGHTGRAY);
