@@ -159,7 +159,6 @@ int main() {
 			case STATE_CONTINUE:
 				// 続行の処理
 				// 🌟 背景で敵だけを動かしたいので、プレイヤー以外をUpdateする！
-				UpdateBall(&ball, &player); // ボールが跳ね返る演出などが残っていれば動かす
 				UpdatePkmnManager(&pkmnManager, player.position);
 				UpdateProjectileManager(GetMewtwoProjectileManager());
 
@@ -214,7 +213,6 @@ int main() {
 			DrawTextEx(japaneseFont, "Pause", { 500, 300 }, 40, 1, BLACK);
 			break;
 		case STATE_CONTINUE:
-			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
