@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Ball.cpp" />
+    <ClCompile Include="BlinkingText.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MEWTWO.cpp" />
     <ClCompile Include="pkmn.cpp" />
@@ -151,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ball.h" />
+    <ClInclude Include="BlinkingText.h" />
     <ClInclude Include="MEWTWO.h" />
     <ClInclude Include="pkmn.h" />
     <ClInclude Include="player.h" />

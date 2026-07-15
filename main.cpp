@@ -3,6 +3,7 @@
 #include "pkmn.h"
 #include "MEWTWO.h"
 #include "player.h"
+#include "BlinkingText.h"
 
 #define TODAY_COMMENT ((const char*)u8"karaage")
 #define WINDOW_WIDTH 1280
@@ -81,6 +82,7 @@ int main() {
 	Player player = CreatePlayer();
 	Ball ball = CreateBall();
 	PkmnManager pkmnManager = CreatePkmnManager();
+	BlinkingText text;
 	
 	PkmnBlueprint pikaSetting = {};				//{0}だとenum型で引っかかってエラーになるので{}で初期化する
 	pikaSetting.type = PKMN_PIKACHU;
@@ -115,6 +117,8 @@ int main() {
 		switch (gameState) {
 			case STATE_TITLE:
 				// タイトル画面の処理
+				UpdateBlinkingText(text);  //処理はこっち
+
 				if (IsKeyPressed(KEY_SPACE)) gameState = STATE_GAME;
 				if (IsKeyPressed(KEY_R)) gameState = STATE_RULE;
 				break;
@@ -161,9 +165,10 @@ int main() {
 				// 🌟 背景で敵だけを動かしたいので、プレイヤー以外をUpdateする！
 				UpdatePkmnManager(&pkmnManager, player.position);
 				UpdateProjectileManager(GetMewtwoProjectileManager());
+				UpdateBlinkingText(text);
 
-				// 「Cキーでコンティニュー（今やったステージをリトライ）」
-				if (IsKeyPressed(KEY_C)) {
+				// 「スペースキーでコンティニュー（今やったステージをリトライ）」
+				if (IsKeyPressed(KEY_SPACE)) {
 					// 💡 ここでプレイヤーのライフや位置、ポケモンたちをリセットする処理を呼ぶ！
 					ResetGame(&player, &ball, &pkmnManager);
 					gameState = STATE_GAME;
@@ -176,6 +181,8 @@ int main() {
 				break;
 			case STATE_CLEAR:
 				// クリアの処理
+				UpdateBlinkingText(text);
+
 				// 「スペースキーでタイトルに戻る」など
 				if (IsKeyPressed(KEY_SPACE)) {
 					ResetGame(&player, &ball, &pkmnManager); // ゲームをリセット
@@ -191,6 +198,7 @@ int main() {
 		switch (gameState) {
 		case STATE_TITLE:
 			DrawTextEx(japaneseFont, "Catch pkmn", { 500, 300 }, 40, 1, BLACK);
+			DrawBlinkingText(text, japaneseFont, "Press SPACE", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_RULE:
 			DrawTextEx(japaneseFont, "Rules description", { 500, 300 }, 40, 1, BLACK);
@@ -217,7 +225,8 @@ int main() {
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
 			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 0, 0, 200 }); // 半透明の黒いオーバーレイ poseより濃い
-			DrawTextEx(japaneseFont, "Continue", { 500, 300 }, 40, 1, BLACK);
+			DrawTextEx(japaneseFont, "Continue ?", { 550, 300 }, 40, 1, BLACK);
+			DrawBlinkingText(text, japaneseFont, "Press SPACE", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_CLEAR:
 			// 背景はクリアした瞬間のゲーム画面をそのまま残して、薄くフィルターをかけるとおしゃれです
@@ -230,9 +239,9 @@ int main() {
 			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 200, 100, 100 });
 
 			// クリアの文字と操作案内
-			DrawTextEx(japaneseFont, "STAGE CLEAR!", { 450, 250 }, 60, 1, GOLD);
-			DrawTextEx(japaneseFont, "Congratulations! You caught all the Pokemon!", { 350, 350 }, 24, 1, WHITE);
-			DrawTextEx(japaneseFont, "PRESS [SPACE] TO RETURN TO TITLE", { 380, 450 }, 20, 1, LIGHTGRAY);
+			DrawTextEx(japaneseFont, "STAGE CLEAR!", { 440, 300 }, 60, 1, GOLD);
+			DrawTextEx(japaneseFont, "THANK YOU FOR PLAYING!", { 460, 450 }, 30, 1, GOLD);
+			DrawBlinkingText(text, japaneseFont, "PRESS SPACE", { 550, 600 }, 20, WHITE);
 			break;
 		}
 		

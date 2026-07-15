@@ -97,6 +97,10 @@ void DrawPlayer(Player player) {
 	}
 }
 
+//================================================================
+// 💥 プレイヤーが弾やポケモンに当たったかどうかをチェックする関数
+//================================================================
+
 void CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManager, Player* player) {
 	//無敵時間を減らす
 	if (player->invincibleFrame > 0) {
