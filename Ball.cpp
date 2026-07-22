@@ -167,8 +167,8 @@ void UpdateBall(Ball* ball, Player* player) {
             // 速度ベクトルの「二乗の長さ」（Xの二乗 + Yの二乗）を出す
             float speedSquared = (ball->speed.x * ball->speed.x) + (ball->speed.y * ball->speed.y);
 
-            // 速度がほぼゼロ（0.2の二乗である 0.04f 未満）になったら手元に戻す
-            if (IsKeyPressed(KEY_SPACE) || speedSquared < 0.04f) {
+            // 速度がなくなってきたら（2.5の二乗である 6.25f 未満）手元に戻す
+            if (IsKeyPressed(KEY_SPACE) || speedSquared < 6.25f) {
                 ball->state = BALL_WAIT_X;
             }
             else if (ball->position.x < -ball->radius || ball->position.x > screenWidth + ball->radius ||

@@ -23,7 +23,7 @@ void UpdatePlayer(Player* player) {
 			// 💡 関数が終わってもクリックした位置を記憶し続ける変数
 			static Vector2 clickStartPos = { 0.0f, 0.0f };
 
-			float moveMultiplier = 0.5f; // ➔ 飛んでいく「初速」の倍率（好みに合わせて調整）
+			float moveMultiplier = 0.2f; // ➔ 飛んでいく「初速」の倍率（好みに合わせて調整）
 			float friction = 0.92f;      // ➔ 減速の割合（0.90〜0.98 の間で調整。小さいほどすぐ止まる）
 
 			// ⏳ 【毎フレーム実行】前フレームの速度を少しずつ減速させる（摩擦）

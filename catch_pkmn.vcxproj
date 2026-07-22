@@ -157,6 +157,9 @@
     <ClInclude Include="pkmn.h" />
     <ClInclude Include="player.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\backColor.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\raylib.5.5.0\build\native\raylib.targets" Condition="Exists('packages\raylib.5.5.0\build\native\raylib.targets')" />

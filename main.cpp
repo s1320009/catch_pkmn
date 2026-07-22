@@ -110,6 +110,7 @@ int main() {
 	AddPkmn(&pkmnManager, m2);
 
 	//ロード
+	Texture2D bgTexture = LoadTexture("resources/backColor.png");
 	Font japaneseFont = LoadFontEx("resources/my_font.ttc", 32, 0, 0);
 
 	while (!WindowShouldClose()) {
@@ -200,15 +201,18 @@ int main() {
 			DrawBlinkingText(text, japaneseFont, "Press SPACE", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_RULE:
+			DrawTexture(bgTexture, 0, 0, WHITE);
 			DrawTextEx(japaneseFont, "Rules description", { 500, 300 }, 40, 1, BLACK);
 			break;
 		case STATE_GAME:
+			DrawTexture(bgTexture, 0, 0, WHITE);
 			DrawPlayer(player);
 			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 			break;
 		case STATE_PAUSE:
+			DrawTexture(bgTexture, 0, 0, WHITE);
 			DrawPlayer(player);
 			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
@@ -218,6 +222,7 @@ int main() {
 			DrawTextEx(japaneseFont, "Pause", { 500, 300 }, 40, 1, BLACK);
 			break;
 		case STATE_CONTINUE:
+			DrawTexture(bgTexture, 0, 0, WHITE);
 			DrawPkmnManager(pkmnManager);
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
@@ -227,6 +232,7 @@ int main() {
 			break;
 		case STATE_CLEAR:
 			// 背景はクリアした瞬間のゲーム画面をそのまま残して、薄くフィルターをかけるとおしゃれです
+			DrawTexture(bgTexture, 0, 0, WHITE);
 			DrawPlayer(player);
 			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
@@ -247,6 +253,7 @@ int main() {
 
 	//アンロード
 	UnloadFont(japaneseFont);
+	UnloadTexture(bgTexture);
 	CloseWindow();
 	return 0;
 }
