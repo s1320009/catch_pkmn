@@ -5,7 +5,6 @@
 #include "player.h"
 #include "BlinkingText.h"
 
-#define TODAY_COMMENT ((const char*)u8"karaage")
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
 
@@ -204,14 +203,12 @@ int main() {
 			DrawTextEx(japaneseFont, "Rules description", { 500, 300 }, 40, 1, BLACK);
 			break;
 		case STATE_GAME:
-			DrawTextEx(japaneseFont, TODAY_COMMENT, { 190, 200 }, 20, 1, BLUE);
 			DrawPlayer(player);
 			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 			break;
 		case STATE_PAUSE:
-			DrawTextEx(japaneseFont, TODAY_COMMENT, { 190, 200 }, 20, 1, BLUE);
 			DrawPlayer(player);
 			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
