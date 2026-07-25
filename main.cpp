@@ -1,4 +1,5 @@
 ﻿#include "raylib.h"
+#include "Editor.h"
 #include "Ball.h"
 #include "pkmn.h"
 #include "MEWTWO.h"
@@ -14,7 +15,8 @@ typedef enum {
 	STATE_GAME,
 	STATE_PAUSE,
 	STATE_CONTINUE,
-	STATE_CLEAR
+	STATE_CLEAR,
+	STATE_EDITOR
 } GameState;
 
 void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager) {
@@ -77,6 +79,7 @@ int main() {
 	SetTargetFPS(60);
 
 	//初期化
+	InitializeEditor();
 	GameState gameState = STATE_TITLE;			//もちろんタイトルで初期化
 	Player player = CreatePlayer();
 	Ball ball = CreateBall();
@@ -121,6 +124,7 @@ int main() {
 
 				if (IsKeyPressed(KEY_SPACE)) gameState = STATE_GAME;
 				if (IsKeyPressed(KEY_R)) gameState = STATE_RULE;
+				if (IsKeyPressed(KEY_E)) gameState = STATE_EDITOR;
 				break;
 			case STATE_RULE:
 				// ルール画面の処理
@@ -189,6 +193,13 @@ int main() {
 					gameState = STATE_TITLE;
 				}
 				break;
+			case STATE_EDITOR:
+				// エディタの処理
+				UpdateEditor();
+				if (IsKeyPressed(KEY_B)) {
+					gameState = STATE_TITLE;
+				}
+				break;
 		}		
 
 		// Draw
@@ -246,6 +257,10 @@ int main() {
 			DrawTextEx(japaneseFont, "THANK YOU FOR PLAYING!", { 460, 450 }, 30, 1, GOLD);
 			DrawBlinkingText(text, japaneseFont, "PRESS SPACE", { 550, 600 }, 20, WHITE);
 			break;
+		case STATE_EDITOR:
+			ClearBackground(LIGHTGRAY);
+			DrawEditor();
+			break;
 		}
 		
 		EndDrawing();
@@ -254,6 +269,9 @@ int main() {
 	//アンロード
 	UnloadFont(japaneseFont);
 	UnloadTexture(bgTexture);
+
+	ShutdownEditor();			//エディタの終了処理
+
 	CloseWindow();
 	return 0;
 }

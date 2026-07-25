@@ -7,7 +7,8 @@ Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos) {
 	Pkmn pkmn = { 0 };                      // すべてのメンバを0で初期化
 
 	//ステートの初期化
-	pkmn.position = startPos;
+	Vector2 initialPos = startPos;
+	pkmn.position = initialPos;
 	pkmn.speed = { 0.0f, 0.0f };
 	pkmn.state = PKMN_STATE_THINK;
 
