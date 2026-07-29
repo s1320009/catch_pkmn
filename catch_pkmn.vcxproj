@@ -159,6 +159,7 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="MEWTWO.h" />
     <ClInclude Include="pkmn.h" />
+    <ClInclude Include="PkmnComponent.h" />
     <ClInclude Include="player.h" />
   </ItemGroup>
   <ItemGroup>
