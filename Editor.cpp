@@ -118,14 +118,14 @@ namespace //namespace {}で無名空間を作る　staticの領域展開バージョン　これはこの
 			0,
 			HIERARCHY_WIDTH,
 			GetScreenHeight(),
-			LIGHTGRAY
+			DARKGREEN
 		);
 
 		DrawText("Hierarchy", 10, 10, 20, BLACK);
 
 		Rectangle addButton = { 10, 40, 190, 30 };
 
-		DrawRectangleRec(addButton, DARKGREEN);
+		DrawRectangleRec(addButton, DARKBLUE);
 		DrawText("Add", 20, 45, 20, BLACK);
 
 		int objectY = 100;
@@ -140,12 +140,15 @@ namespace //namespace {}で無名空間を作る　staticの領域展開バージョン　これはこの
 
 			if (object.get() == selectedObject) {
 				DrawRectangleRec(itemRect, SKYBLUE);
+				DrawText(object->name.c_str(), 20, objectY, 20, BLACK);
+			}
+			else if (object.get() != selectedObject) {
+				DrawRectangleRec(itemRect, LIGHTGRAY);
+				DrawText(object->name.c_str(), 20, objectY, 20, BLACK);
 			}
 
 			objectY += 35;
 		}
-
-		DrawText("Click to select an object", 10, GetScreenHeight() - 30, 14, DARKGRAY);
 	}
 
 	void DrawScene() {
