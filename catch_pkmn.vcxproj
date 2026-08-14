@@ -147,6 +147,7 @@
     <ClCompile Include="MEWTWO.cpp" />
     <ClCompile Include="pkmn.cpp" />
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="TextureComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -155,11 +156,13 @@
   <ItemGroup>
     <ClInclude Include="Ball.h" />
     <ClInclude Include="BlinkingText.h" />
+    <ClInclude Include="Component.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="MEWTWO.h" />
     <ClInclude Include="pkmn.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="TextureComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\backColor.png" />

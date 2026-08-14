@@ -35,6 +35,7 @@ typedef struct {
 // ==========================================================
 typedef struct {
 	Vector2 position;	// ポケモンの位置
+	Vector2 initialPos;	// ポケモンの初期位置
 	Vector2 speed;		// ポケモンの"現在の"移動速度
 	PkmnState state;	// ポケモンの状態
 	int frameCounter;   // ポケモンの技をフレームで管理

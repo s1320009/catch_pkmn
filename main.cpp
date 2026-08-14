@@ -11,6 +11,7 @@
 
 typedef enum {
 	STATE_TITLE,
+	STATE_SELECT,
 	STATE_RULE,
 	STATE_GAME,
 	STATE_PAUSE,
@@ -19,7 +20,7 @@ typedef enum {
 	STATE_EDITOR
 } GameState;
 
-void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager) {
+void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager, ProjectileManager* projectileManager) {
 	// プレイヤーのリセット
 	player->life = 3;
 	player->position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
@@ -31,11 +32,16 @@ void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager) {
 	// ボールのリセット
 	*ball = CreateBall(); // 丸ごと初期状態で上書き
 
+	// 弾のリセット
+	ClearProjectileManager(projectileManager);
+
+
 	// ポケモンたちの復活
 	for (int i = 0; i < pkmnManager->count; i++) {
 		pkmnManager->list[i].isActive = true;
 		pkmnManager->list[i].state = PKMN_STATE_THINK;
 		pkmnManager->list[i].timer = 0.0f;
+		pkmnManager->list[i].position = pkmnManager->list[i].initialPos; // 初期位置に戻す
 		// 初期位置に戻したい場合は、各ポケモンの初期位置を構造体に保存しておくのがおすすめです
 	}
 }
@@ -174,12 +180,12 @@ int main() {
 				// 「スペースキーでコンティニュー（今やったステージをリトライ）」
 				if (IsKeyPressed(KEY_SPACE)) {
 					// 💡 ここでプレイヤーのライフや位置、ポケモンたちをリセットする処理を呼ぶ！
-					ResetGame(&player, &ball, &pkmnManager);
+					ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager());
 					gameState = STATE_GAME;
 				}
 				// 「Tキーでタイトルに戻る」
 				if (IsKeyPressed(KEY_T)) {
-					ResetGame(&player, &ball, &pkmnManager);
+					ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager());
 					gameState = STATE_TITLE;
 				}
 				break;
@@ -189,7 +195,7 @@ int main() {
 
 				// 「スペースキーでタイトルに戻る」など
 				if (IsKeyPressed(KEY_SPACE)) {
-					ResetGame(&player, &ball, &pkmnManager); // ゲームをリセット
+					ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager()); // ゲームをリセット
 					gameState = STATE_TITLE;
 				}
 				break;
