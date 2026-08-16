@@ -5,24 +5,18 @@
 #include "MEWTWO.h"
 #include "player.h"
 #include "BlinkingText.h"
+#include "GameState.h"
+#include "StateSelect.h"
+#include "Stage.h"
+#include "ContinueSelect.h"
+#include "Rule.h"
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
 
-typedef enum {
-	STATE_TITLE,
-	STATE_SELECT,
-	STATE_RULE,
-	STATE_GAME,
-	STATE_PAUSE,
-	STATE_CONTINUE,
-	STATE_CLEAR,
-	STATE_EDITOR
-} GameState;
-
 void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager, ProjectileManager* projectileManager) {
 	// プレイヤーのリセット
-	player->life = 3;
+	player->life = 1;
 	player->position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
 	player->speed = { 0.0f, 0.0f };
 	player->state = PLAYER_STATE_FINE;
@@ -79,62 +73,125 @@ void CheckCollisions(Ball* ball, PkmnManager* pkmnManager, Player* player) {		//
 	}
 }
 
+GameState gameState;
+
 int main() {
+	int codepointCount = 0;
+
+	// ASCII + ひらがな + カタカナ + CJK漢字
+	int ranges[][2] = {
+	{0x0020, 0x007E},
+	{0x3040, 0x309F},
+	{0x30A0, 0x30FF},
+	{0x4E00, 0x9FFF},
+	};
+	int rangeCount = 4;
+
+	for (int i = 0; i < rangeCount; i++)
+		codepointCount += ranges[i][1] - ranges[i][0] + 1;
+
+	vector<int> codepoints(codepointCount);
+	int idx = 0;
+	for (int i = 0; i < rangeCount; i++) {
+		for (int c = ranges[i][0]; c <= ranges[i][1]; c++) {
+			codepoints[idx++] = c;
+		}
+	}
+
 	// 画面の初期化
 	InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Catch pkmn");
 	SetTargetFPS(60);
+	InitAudioDevice();
 
 	//初期化
 	InitializeEditor();
-	GameState gameState = STATE_TITLE;			//もちろんタイトルで初期化
+	gameState = STATE_TITLE;			//もちろんタイトルで初期化
+	
+	InitializeStateSelect();
+	InitializeContinueSelect();
 	Player player = CreatePlayer();
 	Ball ball = CreateBall();
-	PkmnManager pkmnManager = CreatePkmnManager();
+	PkmnManager pkmnManager{};
+	ProjectileManager projectileManager{};
 	BlinkingText text;
 	
-	PkmnBlueprint pikaSetting = {};				//{0}だとenum型で引っかかってエラーになるので{}で初期化する
-	pikaSetting.type = PKMN_PIKACHU;
-	pikaSetting.radius = 15.0f;
-	pikaSetting.color = YELLOW;
-	pikaSetting.dashSpeed = 9.0f;
-	pikaSetting.attackduration = 0.5f;
-	pikaSetting.thinkduration = 1.0f;
-	pikaSetting.stayduration = 1.5f;
-	pikaSetting.moveduration = 0.5f;
-
-	PkmnBlueprint m2Setting = {};
-	m2Setting.type = PKMN_MEWTWO;
-	m2Setting.radius = 20.0f;
-	m2Setting.color = PURPLE;
-	m2Setting.dashSpeed = 7.0f;
-	m2Setting.attackduration = 1.0f;
-	m2Setting.thinkduration = 0.5f;
-	m2Setting.stayduration = 1.0f;
-	m2Setting.moveduration = 0.5f;
-
-	Pkmn pika = CreatePkmn(pikaSetting, { 700, 300 });
-	Pkmn m2 = CreatePkmn(m2Setting, { 100, 300 });
-
-	AddPkmn(&pkmnManager, pika);
-	AddPkmn(&pkmnManager, m2);
 
 	//ロード
+	Music ruleBGM = LoadMusicStream("resources/ruleBGM.mp3");
+	SetMusicVolume(ruleBGM, 0.01f);
+	Music gameBGM = LoadMusicStream("resources/gameBGM.mp3");
+	SetMusicVolume(gameBGM, 0.01f);
+	Music titleBGM = LoadMusicStream("resources/titleBGM.mp3");
+	SetMusicVolume(titleBGM, 0.01f);
+	Music winBGM = LoadMusicStream("resources/winBGM.mp3");
+	SetMusicVolume(winBGM, 0.01f);
+	Music loseBGM = LoadMusicStream("resources/loseBGM.mp3");
+	SetMusicVolume(loseBGM, 0.07f);
+	Sound pauseSE = LoadSound("resources/pauseSE.mp3");
+	Sound loseSE = LoadSound("resources/loseSE.mp3");
 	Texture2D bgTexture = LoadTexture("resources/backColor.png");
-	Font japaneseFont = LoadFontEx("resources/my_font.ttc", 32, 0, 0);
+	Font japaneseFont = LoadFontEx("resources/KH-Dot-Hibiya-32.ttf", 32, codepoints.data(), codepointCount);
+	TraceLog(LOG_INFO, "glyphCount=%d textureId=%u", japaneseFont.glyphCount, japaneseFont.texture.id);
+
+	static bool ruleBGMStarted = false;
+	static bool  gameBGMStarted = false;
+	static bool  titleBGMStarted = false;
+	static bool winBGMStarted = false;
+	static bool loseBGMStarted = false;
 
 	while (!WindowShouldClose()) {
+		if (gameState != STATE_RULE && ruleBGMStarted) {
+			ruleBGMStarted = false;
+		}
+		if (gameState != STATE_GAME && gameBGMStarted) {
+			gameBGMStarted = false;
+		}
+		if ((gameState != STATE_TITLE && gameState != STATE_SELECT) && titleBGMStarted) {
+			titleBGMStarted = false;
+		}
+		if (gameState != STATE_CLEAR && winBGMStarted) {
+			winBGMStarted = false;
+		}
 		switch (gameState) {
 			case STATE_TITLE:
 				// タイトル画面の処理
 				UpdateBlinkingText(text);  //処理はこっち
 
-				if (IsKeyPressed(KEY_SPACE)) gameState = STATE_GAME;
-				if (IsKeyPressed(KEY_R)) gameState = STATE_RULE;
+				if (IsKeyPressed(KEY_SPACE)) gameState = STATE_SELECT;
 				if (IsKeyPressed(KEY_E)) gameState = STATE_EDITOR;
+				if (!titleBGMStarted)
+				{
+					PlayMusicStream(titleBGM);
+					titleBGMStarted = true;
+				}
+				UpdateMusicStream(titleBGM);
+				break;
+			case STATE_SELECT:
+				// セレクト画面の処理
+				UpdateStateSelect();
+				UpdateBlinkingText(text);
+				if (STATE_SELECT != gameState) {
+					LoadStage(selectRect, &pkmnManager);
+					ResetGame(&player, &ball, &pkmnManager, &projectileManager);
+					InitializeStateSelect();
+				}
+				if (!titleBGMStarted)
+				{
+					PlayMusicStream(titleBGM);
+					titleBGMStarted = true;
+				}
+				UpdateMusicStream(titleBGM);
 				break;
 			case STATE_RULE:
 				// ルール画面の処理
-				if (IsKeyPressed(KEY_B)) gameState = STATE_TITLE;
+				UpdateRule(&player, &ball, &pkmnManager, &gameState);
+				if (!ruleBGMStarted)
+				{
+					PlayMusicStream(ruleBGM);
+					ruleBGMStarted = true;
+				}
+
+				UpdateMusicStream(ruleBGM);
 				break;
 			case STATE_GAME:
 				// ゲーム画面の処理
@@ -159,12 +216,20 @@ int main() {
 				// 🌟 Pキーが押されたらポーズ画面へ！
 				if (IsKeyPressed(KEY_P)) {
 					gameState = STATE_PAUSE;
+					TraceLog(LOG_INFO, "pauseSE play");
+					PlaySound(pauseSE);
 				}
+				if (!gameBGMStarted)
+				{
+					PlayMusicStream(gameBGM);
+					gameBGMStarted = true;
+				}
+
+				UpdateMusicStream(gameBGM);
 				break;
 			case STATE_PAUSE:
 				// 一時停止の処理
 				// 背景のゲームは動かさない（Updateを一切呼ばないことで「中断」を表現！）
-
 				// 「Pキーで再開（STATE_GAMEへ）」
 				if (IsKeyPressed(KEY_P)) gameState = STATE_GAME;
 				// 「Rキーでルール説明へ」
@@ -176,18 +241,21 @@ int main() {
 				UpdatePkmnManager(&pkmnManager, player.position);
 				UpdateProjectileManager(GetMewtwoProjectileManager());
 				UpdateBlinkingText(text);
+				UpdateContinueSelect();
 
 				// 「スペースキーでコンティニュー（今やったステージをリトライ）」
 				if (IsKeyPressed(KEY_SPACE)) {
 					// 💡 ここでプレイヤーのライフや位置、ポケモンたちをリセットする処理を呼ぶ！
 					ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager());
-					gameState = STATE_GAME;
+					continueSelectRect = 0; // コンティニュー画面の選択を初期化
 				}
-				// 「Tキーでタイトルに戻る」
-				if (IsKeyPressed(KEY_T)) {
-					ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager());
-					gameState = STATE_TITLE;
+
+				if (!loseBGMStarted)
+				{
+					PlayMusicStream(loseBGM);
+					loseBGMStarted = true;
 				}
+				UpdateMusicStream(loseBGM);
 				break;
 			case STATE_CLEAR:
 				// クリアの処理
@@ -198,6 +266,13 @@ int main() {
 					ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager()); // ゲームをリセット
 					gameState = STATE_TITLE;
 				}
+
+				if (!winBGMStarted)
+				{
+					PlayMusicStream(winBGM);
+					winBGMStarted = true;
+				}
+				UpdateMusicStream(winBGM);
 				break;
 			case STATE_EDITOR:
 				// エディタの処理
@@ -217,12 +292,18 @@ int main() {
 			DrawTextEx(japaneseFont, "Catch pkmn", { 500, 300 }, 40, 1, BLACK);
 			DrawBlinkingText(text, japaneseFont, "Press SPACE", { 550, 600 }, 20, BLACK);
 			break;
+		case STATE_SELECT:
+			DrawStateSelect();
+			DrawTextEx(japaneseFont, "Select stage", { 500, 200 }, 40, 1, BLACK);
+			DrawBlinkingText(text, japaneseFont, "Press SPACE", { 550, 600 }, 20, BLACK);
+			break;
 		case STATE_RULE:
-			DrawTexture(bgTexture, 0, 0, WHITE);
-			DrawTextEx(japaneseFont, "Rules description", { 500, 300 }, 40, 1, BLACK);
+			DrawRule(&player,&ball,&pkmnManager);
+			DrawBlinkingText(text, japaneseFont, "Press B to back", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_GAME:
 			DrawTexture(bgTexture, 0, 0, WHITE);
+			DrawText("press P to pause", 10, 10, 30, WHITE);
 			DrawPlayer(player);
 			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
@@ -244,8 +325,8 @@ int main() {
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
 			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 0, 0, 200 }); // 半透明の黒いオーバーレイ poseより濃い
-			DrawTextEx(japaneseFont, "Continue ?", { 550, 300 }, 40, 1, BLACK);
-			DrawBlinkingText(text, japaneseFont, "Press SPACE", { 550, 600 }, 20, BLACK);
+			DrawTextEx(japaneseFont, "Continue ?", { 550, 300 }, 40, 1, WHITE);
+			DrawContinueSelect();
 			break;
 		case STATE_CLEAR:
 			// 背景はクリアした瞬間のゲーム画面をそのまま残して、薄くフィルターをかけるとおしゃれです
@@ -275,9 +356,13 @@ int main() {
 	//アンロード
 	UnloadFont(japaneseFont);
 	UnloadTexture(bgTexture);
+	UnloadMusicStream(ruleBGM);
+	UnloadMusicStream(titleBGM);
+	UnloadSound(pauseSE);
 
 	ShutdownEditor();			//エディタの終了処理
 
+	CloseAudioDevice();
 	CloseWindow();
 	return 0;
 }

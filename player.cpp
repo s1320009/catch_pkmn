@@ -8,7 +8,7 @@ Player CreatePlayer() {
 	player.speed = { 0.0f, 0.0f };
 	player.size = { 50.0f, 50.0f };
 	player.color = RED;
-	player.life = 3;
+	player.life = 1;
 	player.isInvincible = false;
 	player.invincibleFrame = 0; // 無敵時間を3秒に設定
 	player.state = PLAYER_STATE_FINE;
@@ -145,8 +145,6 @@ void CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManager, Playe
 				if (CheckCollisionCircleRec(enemy->position, enemy->blueprint.radius, { player->position.x - player->size.x / 2, player->position.y - player->size.y / 2, player->size.x, player->size.y })) {
 					player->life--;
 					player->invincibleFrame = 60; // 1秒無敵
-
-					// ※お好みで、体当たりした後に敵をちょっとだけ弾き飛ばす処理などをここに追加できます
 					return;
 				}
 			}

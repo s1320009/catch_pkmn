@@ -141,12 +141,16 @@
   <ItemGroup>
     <ClCompile Include="Ball.cpp" />
     <ClCompile Include="BlinkingText.cpp" />
+    <ClCompile Include="ContinueSelect.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MEWTWO.cpp" />
     <ClCompile Include="pkmn.cpp" />
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="Rule.cpp" />
+    <ClCompile Include="Stage.cpp" />
+    <ClCompile Include="StateSelect.cpp" />
     <ClCompile Include="TextureComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -157,15 +161,33 @@
     <ClInclude Include="Ball.h" />
     <ClInclude Include="BlinkingText.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="ContinueSelect.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="MEWTWO.h" />
     <ClInclude Include="pkmn.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="Rule.h" />
+    <ClInclude Include="Stage.h" />
+    <ClInclude Include="StateSelect.h" />
     <ClInclude Include="TextureComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\backColor.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="resources\KH-Dot-Hibiya-32.ttf" />
+    <Font Include="resources\YDWaosagi.otf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="resources\gameBGM.mp3" />
+    <Media Include="resources\loseBGM.mp3" />
+    <Media Include="resources\loseSE.mp3" />
+    <Media Include="resources\ruleBGM.mp3" />
+    <Media Include="resources\titleBGM.mp3" />
+    <Media Include="resources\pauseSE.mp3" />
+    <Media Include="resources\winBGM.mp3" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -196,8 +196,8 @@ void DrawMewtwoAttack(Pkmn pkmn) {
 	DrawLineV(pkmn.position, lineEnd, YELLOW);
 
 	// デバッグ用：現在のフェーズと回転角度を表示
-	DrawText(TextFormat("frame: %d, Rotation: %.1f", pkmn.frameCounter, pkmn.rotation), 
-			 (int)pkmn.position.x - 50, (int)pkmn.position.y - 80, 12, WHITE);
+	//DrawText(TextFormat("frame: %d, Rotation: %.1f", pkmn.frameCounter, pkmn.rotation), 
+	//		 (int)pkmn.position.x - 50, (int)pkmn.position.y - 80, 12, WHITE);
 }
 
 // ==========================================================

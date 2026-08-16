@@ -222,10 +222,10 @@ void DrawBall(Ball ball) {
     }
 
     if (ball.state == BALL_WAIT_X) {
-        DrawText("PRESS [A/D] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+        //DrawText("PRESS [A/D] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
     }
     if (ball.state == BALL_WAIT_Y) {
-        DrawText("PRESS [W/S] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+        //DrawText("PRESS [W/S] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
     }
 
     // 2. 状態に応じたチャージゲージUIの描画
@@ -294,6 +294,6 @@ void DrawBall(Ball ball) {
                 DrawCircleV(simPos, 3, MAROON);
             }
         }
-                         DrawText("PRESS [SPACE] TO LAUNCH / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
-                     }
-                 }
+        //DrawText("PRESS [SPACE] TO LAUNCH / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+    }
+}

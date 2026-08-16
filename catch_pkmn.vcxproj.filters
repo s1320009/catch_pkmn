@@ -42,6 +42,18 @@
     <ClCompile Include="TextureComponent.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="StateSelect.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Stage.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="ContinueSelect.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Rule.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -77,10 +89,56 @@
     <ClInclude Include="TextureComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Stage.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="StateSelect.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameState.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="ContinueSelect.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Rule.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\backColor.png">
       <Filter>リソース ファイル</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="resources\YDWaosagi.otf">
+      <Filter>リソース ファイル</Filter>
+    </Font>
+    <Font Include="resources\KH-Dot-Hibiya-32.ttf">
+      <Filter>リソース ファイル</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="resources\ruleBGM.mp3">
+      <Filter>リソース ファイル</Filter>
+    </Media>
+    <Media Include="resources\gameBGM.mp3">
+      <Filter>リソース ファイル</Filter>
+    </Media>
+    <Media Include="resources\titleBGM.mp3">
+      <Filter>リソース ファイル</Filter>
+    </Media>
+    <Media Include="resources\pauseSE.mp3">
+      <Filter>リソース ファイル</Filter>
+    </Media>
+    <Media Include="resources\loseSE.mp3">
+      <Filter>リソース ファイル</Filter>
+    </Media>
+    <Media Include="resources\winBGM.mp3">
+      <Filter>リソース ファイル</Filter>
+    </Media>
+    <Media Include="resources\loseBGM.mp3">
+      <Filter>リソース ファイル</Filter>
+    </Media>
   </ItemGroup>
 </Project>
