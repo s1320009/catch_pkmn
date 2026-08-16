@@ -131,9 +131,6 @@
     <Media Include="resources\pauseSE.mp3">
       <Filter>リソース ファイル</Filter>
     </Media>
-    <Media Include="resources\loseSE.mp3">
-      <Filter>リソース ファイル</Filter>
-    </Media>
     <Media Include="resources\winBGM.mp3">
       <Filter>リソース ファイル</Filter>
     </Media>

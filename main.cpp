@@ -128,7 +128,6 @@ int main() {
 	Music loseBGM = LoadMusicStream("resources/loseBGM.mp3");
 	SetMusicVolume(loseBGM, 0.07f);
 	Sound pauseSE = LoadSound("resources/pauseSE.mp3");
-	Sound loseSE = LoadSound("resources/loseSE.mp3");
 	Texture2D bgTexture = LoadTexture("resources/backColor.png");
 	Font japaneseFont = LoadFontEx("resources/KH-Dot-Hibiya-32.ttf", 32, codepoints.data(), codepointCount);
 	TraceLog(LOG_INFO, "glyphCount=%d textureId=%u", japaneseFont.glyphCount, japaneseFont.texture.id);
@@ -358,6 +357,8 @@ int main() {
 	UnloadTexture(bgTexture);
 	UnloadMusicStream(ruleBGM);
 	UnloadMusicStream(titleBGM);
+	UnloadMusicStream(loseBGM);
+	UnloadMusicStream(winBGM);
 	UnloadSound(pauseSE);
 
 	ShutdownEditor();			//エディタの終了処理

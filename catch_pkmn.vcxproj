@@ -183,7 +183,6 @@
   <ItemGroup>
     <Media Include="resources\gameBGM.mp3" />
     <Media Include="resources\loseBGM.mp3" />
-    <Media Include="resources\loseSE.mp3" />
     <Media Include="resources\ruleBGM.mp3" />
     <Media Include="resources\titleBGM.mp3" />
     <Media Include="resources\pauseSE.mp3" />
