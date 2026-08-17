@@ -7,6 +7,7 @@ extern GameState gameState;
 
 Rectangle selectRects[MAX_RECT];
 int selectRect = 1;
+static bool initialized = false;
 
 void InitializeStateSelect() {
 	selectRect = 1;
@@ -14,9 +15,13 @@ void InitializeStateSelect() {
 	for (int i = 0; i < MAX_RECT; i++) {
 		selectRects[i] = { (float)GetScreenWidth() / 2 - 100, selectY + i * 60, 200, 50};
 	}
+	initialized = true;
 }
 
 void UpdateStateSelect() {
+	if (!initialized) {
+		InitializeStateSelect();
+	}
 	GameState before = gameState;
 
 	if (IsKeyPressed(KEY_W)	|| IsKeyPressed(KEY_UP)) {
@@ -38,16 +43,13 @@ void UpdateStateSelect() {
 		case 0:
 			if (IsKeyPressed(KEY_SPACE)) {
 				gameState = STATE_RULE;
+				initialized = false;
 			}
 			break;
-		case 1: 
+		default : 
 			if (IsKeyPressed(KEY_SPACE)) {
 				gameState = STATE_GAME;
-			}
-			break;
-		case 2:
-			if (IsKeyPressed(KEY_SPACE)) {
-				gameState = STATE_GAME;
+				initialized = false;
 			}
 			break;
 	}

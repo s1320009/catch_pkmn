@@ -122,7 +122,7 @@ int main() {
 	Music gameBGM = LoadMusicStream("resources/gameBGM.mp3");
 	SetMusicVolume(gameBGM, 0.01f);
 	Music titleBGM = LoadMusicStream("resources/titleBGM.mp3");
-	SetMusicVolume(titleBGM, 0.01f);
+	SetMusicVolume(titleBGM, 0.008f);
 	Music winBGM = LoadMusicStream("resources/winBGM.mp3");
 	SetMusicVolume(winBGM, 0.01f);
 	Music loseBGM = LoadMusicStream("resources/loseBGM.mp3");
@@ -172,7 +172,6 @@ int main() {
 				if (STATE_SELECT != gameState) {
 					LoadStage(selectRect, &pkmnManager);
 					ResetGame(&player, &ball, &pkmnManager, &projectileManager);
-					InitializeStateSelect();
 				}
 				if (!titleBGMStarted)
 				{

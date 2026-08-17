@@ -10,7 +10,7 @@ static Vector2 moveStartPos = { 0.0f, 0.0f };
 void InitializeRule(Player* player, Ball* ball, PkmnManager* pkmnManager) {
 	*player = CreatePlayer();
 	*ball = CreateBall();
-	LoadStage(0, pkmnManager);
+	LoadStage(selectRect, pkmnManager);
 
 	ruleStep = 0;
 	initialized = true;
@@ -102,8 +102,11 @@ void UpdateRule(Player* player, Ball* ball, PkmnManager* pkmnManager, GameState*
 			}
 
 			if (IsKeyPressed(KEY_B)) {
-				ruleStep = 2;
+				ruleStep = 3;
 				moveStartPos = player->position;
+				*player = CreatePlayer();
+				*ball = CreateBall();
+				LoadStage(selectRect, pkmnManager);
 			}
 			break;
 	}
