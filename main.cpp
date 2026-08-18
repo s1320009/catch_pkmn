@@ -1,4 +1,5 @@
 ﻿#include "raylib.h"
+#include "Music.h"
 #include "Editor.h"
 #include "Ball.h"
 #include "pkmn.h"
@@ -117,40 +118,14 @@ int main() {
 	
 
 	//ロード
-	Music ruleBGM = LoadMusicStream("resources/ruleBGM.mp3");
-	SetMusicVolume(ruleBGM, 0.01f);
-	Music gameBGM = LoadMusicStream("resources/gameBGM.mp3");
-	SetMusicVolume(gameBGM, 0.01f);
-	Music titleBGM = LoadMusicStream("resources/titleBGM.mp3");
-	SetMusicVolume(titleBGM, 0.008f);
-	Music winBGM = LoadMusicStream("resources/winBGM.mp3");
-	SetMusicVolume(winBGM, 0.01f);
-	Music loseBGM = LoadMusicStream("resources/loseBGM.mp3");
-	SetMusicVolume(loseBGM, 0.07f);
-	Sound pauseSE = LoadSound("resources/pauseSE.mp3");
 	Texture2D bgTexture = LoadTexture("resources/backColor.png");
 	Font japaneseFont = LoadFontEx("resources/KH-Dot-Hibiya-32.ttf", 32, codepoints.data(), codepointCount);
 	TraceLog(LOG_INFO, "glyphCount=%d textureId=%u", japaneseFont.glyphCount, japaneseFont.texture.id);
 
-	static bool ruleBGMStarted = false;
-	static bool  gameBGMStarted = false;
-	static bool  titleBGMStarted = false;
-	static bool winBGMStarted = false;
-	static bool loseBGMStarted = false;
+	LoadMusic();
 
 	while (!WindowShouldClose()) {
-		if (gameState != STATE_RULE && ruleBGMStarted) {
-			ruleBGMStarted = false;
-		}
-		if (gameState != STATE_GAME && gameBGMStarted) {
-			gameBGMStarted = false;
-		}
-		if ((gameState != STATE_TITLE && gameState != STATE_SELECT) && titleBGMStarted) {
-			titleBGMStarted = false;
-		}
-		if (gameState != STATE_CLEAR && winBGMStarted) {
-			winBGMStarted = false;
-		}
+		UpdateMusic(gameState);
 		switch (gameState) {
 			case STATE_TITLE:
 				// タイトル画面の処理
@@ -158,12 +133,6 @@ int main() {
 
 				if (IsKeyPressed(KEY_SPACE)) gameState = STATE_SELECT;
 				if (IsKeyPressed(KEY_E)) gameState = STATE_EDITOR;
-				if (!titleBGMStarted)
-				{
-					PlayMusicStream(titleBGM);
-					titleBGMStarted = true;
-				}
-				UpdateMusicStream(titleBGM);
 				break;
 			case STATE_SELECT:
 				// セレクト画面の処理
@@ -173,23 +142,10 @@ int main() {
 					LoadStage(selectRect, &pkmnManager);
 					ResetGame(&player, &ball, &pkmnManager, &projectileManager);
 				}
-				if (!titleBGMStarted)
-				{
-					PlayMusicStream(titleBGM);
-					titleBGMStarted = true;
-				}
-				UpdateMusicStream(titleBGM);
 				break;
 			case STATE_RULE:
 				// ルール画面の処理
 				UpdateRule(&player, &ball, &pkmnManager, &gameState);
-				if (!ruleBGMStarted)
-				{
-					PlayMusicStream(ruleBGM);
-					ruleBGMStarted = true;
-				}
-
-				UpdateMusicStream(ruleBGM);
 				break;
 			case STATE_GAME:
 				// ゲーム画面の処理
@@ -214,16 +170,7 @@ int main() {
 				// 🌟 Pキーが押されたらポーズ画面へ！
 				if (IsKeyPressed(KEY_P)) {
 					gameState = STATE_PAUSE;
-					TraceLog(LOG_INFO, "pauseSE play");
-					PlaySound(pauseSE);
 				}
-				if (!gameBGMStarted)
-				{
-					PlayMusicStream(gameBGM);
-					gameBGMStarted = true;
-				}
-
-				UpdateMusicStream(gameBGM);
 				break;
 			case STATE_PAUSE:
 				// 一時停止の処理
@@ -247,13 +194,6 @@ int main() {
 					ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager());
 					continueSelectRect = 0; // コンティニュー画面の選択を初期化
 				}
-
-				if (!loseBGMStarted)
-				{
-					PlayMusicStream(loseBGM);
-					loseBGMStarted = true;
-				}
-				UpdateMusicStream(loseBGM);
 				break;
 			case STATE_CLEAR:
 				// クリアの処理
@@ -264,13 +204,6 @@ int main() {
 					ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager()); // ゲームをリセット
 					gameState = STATE_TITLE;
 				}
-
-				if (!winBGMStarted)
-				{
-					PlayMusicStream(winBGM);
-					winBGMStarted = true;
-				}
-				UpdateMusicStream(winBGM);
 				break;
 			case STATE_EDITOR:
 				// エディタの処理
@@ -315,7 +248,7 @@ int main() {
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
 			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 0, 0, 150 }); // 半透明の黒いオーバーレイ 色の四つ目の引数がポイント
-			DrawTextEx(japaneseFont, "Pause", { 500, 300 }, 40, 1, BLACK);
+			DrawTextEx(japaneseFont, "Pause", { 590, 300 }, 40, 1, BLACK);
 			break;
 		case STATE_CONTINUE:
 			DrawTexture(bgTexture, 0, 0, WHITE);
@@ -354,12 +287,7 @@ int main() {
 	//アンロード
 	UnloadFont(japaneseFont);
 	UnloadTexture(bgTexture);
-	UnloadMusicStream(ruleBGM);
-	UnloadMusicStream(titleBGM);
-	UnloadMusicStream(loseBGM);
-	UnloadMusicStream(winBGM);
-	UnloadSound(pauseSE);
-
+	UnloadMusic();
 	ShutdownEditor();			//エディタの終了処理
 
 	CloseAudioDevice();
