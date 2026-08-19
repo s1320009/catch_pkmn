@@ -3,6 +3,8 @@
 #include <cmath>
 #include "MEWTWO.h"
 
+#define BOUNCE_DURATION 0.5f // 反射状態の持続時間（秒）
+
 Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos) {
 	Pkmn pkmn = { 0 };                      // すべてのメンバを0で初期化
 
@@ -11,6 +13,7 @@ Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos) {
 	pkmn.position = pkmn.initialPos;
 	pkmn.speed = { 0.0f, 0.0f };
 	pkmn.state = PKMN_STATE_THINK;
+	pkmn.prevState = PKMN_STATE_THINK;
 
 	pkmn.timer = 0.0f;
 	pkmn.frameCounter = 0;                     // フレームカウンター
@@ -24,13 +27,23 @@ Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos) {
 	return pkmn;
 }
 
+void InitStateFrame(Pkmn* pkmn) {
+	pkmn->frameCounter = 0; // THINKに入ったらフレームカウンターをリセット
+	pkmn->timer = 0.0f; // THINKに入ったらタイマーをリセット
+	pkmn->prevState = pkmn->state; // 前の状態を更新
+}
+
 void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 	// 状態遷移の処理
 	pkmn->timer += GetFrameTime(); // タイマーを更新
-
+	pkmn->frameCounter++; // フレームカウンターを更新
 	switch (pkmn->state) {
 		case PKMN_STATE_THINK:
-			pkmn->speed = { 0.0f, 0.0f }; // 移動速度をゼロにする
+			if (pkmn->prevState != pkmn->state) {
+				InitStateFrame(pkmn);
+				pkmn->speed = { 0.0f, 0.0f }; // 移動速度をゼロにする
+			}
+			
 			if (pkmn->timer >= pkmn->blueprint.thinkduration) {
 				pkmn->timer = 0.0f;		// タイマーをリセット
 
@@ -47,7 +60,6 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 					int choice = GetRandomValue(1, 100);
 
 					if (pkmn->blueprint.type == PKMN_PIKACHU) {
-						pkmn->frameCounter = 0; // PIKACHU のフレームカウンターをリセット
 						// PIKACHU: ATTACK 30%, DASH 50%, MOVE 20%
 						if (choice <= 30) {
 							pkmn->state = PKMN_STATE_ATTACK;
@@ -60,7 +72,6 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 						}
 					}
 					else if (pkmn->blueprint.type == PKMN_MEWTWO) {
-						pkmn->frameCounter = 0; // MEWTWO のフレームカウンターをリセット
 						// MEWTWO: ATTACK 70%, DASH 10%, MOVE 20%
 						if (choice <= 70) {
 							pkmn->state = PKMN_STATE_ATTACK;
@@ -80,7 +91,6 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 					int choice = GetRandomValue(1, 100);
 
 					if (pkmn->blueprint.type == PKMN_PIKACHU) {
-						pkmn->frameCounter = 0; // PIKACHU のフレームカウンターをリセット
 						// PIKACHU: ATTACK 20%, DASH 40%, MOVE 40%
 						if (choice <= 20) {
 							pkmn->state = PKMN_STATE_ATTACK;
@@ -93,7 +103,6 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 						}
 					}
 					else if (pkmn->blueprint.type == PKMN_MEWTWO) {
-						pkmn->frameCounter = 0; // MEWTWO のフレームカウンターをリセット
 						// MEWTWO: ATTACK 10%, DASH 40%, MOVE 50%
 						if (choice <= 10) {
 							pkmn->state = PKMN_STATE_ATTACK;
@@ -113,7 +122,10 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 			// ● ATTACK: ポケモンタイプに応じた攻撃処理
 			// --------------------------------------------------
 		case PKMN_STATE_ATTACK:
-			pkmn->speed = { 0.0f, 0.0f }; // 攻撃中はその場で固定
+			if (pkmn->prevState != pkmn->state) {
+				InitStateFrame(pkmn);
+				pkmn->speed = { 0.0f, 0.0f }; // 移動速度をゼロにする
+			}
 
 			if (pkmn->blueprint.type == PKMN_MEWTWO) {
 				// MEWTWO 専用の ATTACK 処理
@@ -122,8 +134,6 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 			else {
 				// 通常の ATTACK（PIKACHU等）
 				if (pkmn->timer >= pkmn->blueprint.attackduration) {
-					pkmn->frameCounter = 0; // フレームカウンターをリセット	
-					pkmn->timer = 0.0f;
 					pkmn->state = PKMN_STATE_STAY;
 				}
 			}
@@ -133,7 +143,9 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 			// ● MOVE: 進行方向に少しだけ移動する
 			// --------------------------------------------------
 		case PKMN_STATE_MOVE:
-
+			if (pkmn->prevState != pkmn->state) {
+				InitStateFrame(pkmn);
+			}
 			if (pkmn->blueprint.type == PKMN_MEWTWO) {
 				UpdateMewtwoMove(pkmn);
 			}
@@ -143,8 +155,6 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 			}
 
 			if (pkmn->timer >= pkmn->blueprint.moveduration) {
-				pkmn->frameCounter = 0; // フレームカウンターをリセット
-				pkmn->timer = 0.0f;
 				pkmn->state = PKMN_STATE_THINK;
 			}
 			break;
@@ -153,13 +163,13 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 			// ● STAY: エディタで決めた時間だけ止まり、ランダムで次へ
 			// --------------------------------------------------
 		case PKMN_STATE_STAY:
-			pkmn->speed = { 0.0f, 0.0f }; // 待機中も停止
+			if (pkmn->prevState != pkmn->state) {
+				InitStateFrame(pkmn);
+				pkmn->speed = { 0.0f, 0.0f }; // 待機中も停止
+			}
 
 			// エディタ設定の待機時間に達したら
 			if (pkmn->timer >= pkmn->blueprint.stayduration) {
-				pkmn->frameCounter = 0; // フレームカウンターをリセット
-				pkmn->timer = 0.0f;
-
 				// 🎲 確率分岐：1か2のサイコロを振る
 				int choice = GetRandomValue(1, 2);
 				if (choice == 1) {
@@ -175,8 +185,9 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 			// ● DASH: 1秒間だけ走って THINK か DASH へ（ご自身のルール）
 			// --------------------------------------------------
 		case PKMN_STATE_DASH:
-			pkmn->frameCounter++; // ➔ 毎フレーム「1」ずつ純粋に増える
-
+			if (pkmn->prevState != pkmn->state) {
+				InitStateFrame(pkmn);
+			}
 			if (pkmn->frameCounter == 1) {
 				float radius = pkmn->blueprint.radius;
 				float speed = pkmn->blueprint.dashSpeed;
@@ -186,7 +197,7 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 				bool isUpSafe = (pkmn->position.y - speed - radius > 0);
 				bool isDownSafe = (pkmn->position.y + speed + radius < GetScreenHeight());
 
-				// 【新機能】「ある程度端に近いか」を判定する基準（100px以内)
+				// 「ある程度端に近いか」を判定する基準（100px以内)
 				float border = 100.0f;
 				bool isNearRight = (pkmn->position.x > GetScreenWidth() - border);
 				bool isNearLeft = (pkmn->position.x < border);
@@ -239,9 +250,6 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 
 			// 1秒走ったら
 			if (pkmn->timer >= 1.0f) {
-				pkmn->timer = 0.0f;
-				pkmn->frameCounter = 0; // フレームカウンターをリセット
-
 				// 🎲 確率分岐：1から3のサイコロを振る
 				int choice = GetRandomValue(1, 3);
 				if (choice == 1) {
@@ -250,6 +258,16 @@ void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos) {
 				else {
 					pkmn->state = PKMN_STATE_THINK;
 				}
+			}
+			break;
+		case PKMN_STATE_BOUNCE:
+			if (pkmn->prevState != pkmn->state) {
+				InitStateFrame(pkmn);
+				pkmn->speed = { 0.0f, 0.0f }; // バウンド中は停止
+			}
+			pkmn->isVisible = false; // バウンド中は見えない
+			if (pkmn->timer >= BOUNCE_DURATION) {
+				pkmn->isActive = false; // ぶつかったら消滅する
 			}
 			break;
 	}

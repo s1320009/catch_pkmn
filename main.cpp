@@ -35,7 +35,9 @@ void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager, ProjectileM
 	for (int i = 0; i < pkmnManager->count; i++) {
 		pkmnManager->list[i].isActive = true;
 		pkmnManager->list[i].state = PKMN_STATE_THINK;
+		pkmnManager->list[i].prevState = PKMN_STATE_THINK;
 		pkmnManager->list[i].timer = 0.0f;
+		pkmnManager->list[i].frameCounter = 0;
 		pkmnManager->list[i].position = pkmnManager->list[i].initialPos; // 初期位置に戻す
 		// 初期位置に戻したい場合は、各ポケモンの初期位置を構造体に保存しておくのがおすすめです
 	}
@@ -57,16 +59,13 @@ void CheckCollisions(Ball* ball, PkmnManager* pkmnManager, Player* player) {		//
 
 					// 💥 ポケモンに当たったのでボールを跳ね返らせるステートにする！
 					ball->state = BALL_BOUNCE;
-
+					enemy->state = PKMN_STATE_BOUNCE; // ポケモンも跳ね返るステートにする
 					// ① 真上に向かってピョコッと跳ねる初速を与える（上はマイナス）
 					ball->speed.x = 0.0f;
 					ball->speed.y = -6.0f; // ★この数字を大きくすると高く跳ねます
 
 					// ② 当たった瞬間のY座標を「天井」の基準として記録しておく！　BOUNCEのほうで初期化するとずっと回るからこっち
 					ball->bounceStartY = ball->position.y;
-					// ポケモン側を倒す（非アクティブにする）
-					enemy->isActive = false;
-
 					break;
 				}
 			}

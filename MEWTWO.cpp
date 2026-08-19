@@ -42,7 +42,7 @@ void UpdateMewtwoAttack(Pkmn* pkmn) {
 
 	MewtwoAttackParameters params = GetMewtwoAttackParameters();
 
-	pkmn->frameCounter++;
+	//pkmn->frameCounter++;
 
 	// 回転速度を適用
 	pkmn->rotation += params.rotationPerSec * GetFrameTime();
@@ -127,8 +127,8 @@ void UpdateMewtwoMove(Pkmn* pkmn) {
 	// MEWTWO MOVE のパラメータを取得
 	MewtwoMoveParameters params = GetMewtwoMoveParameters();
 
-	pkmn->speed = { 0.0f, 0.0f };
-	pkmn->frameCounter++; // ➔ 毎フレーム「1」ずつ純粋に増える
+	//pkmn->speed = { 0.0f, 0.0f };
+	//pkmn->frameCounter++; // ➔ 毎フレーム「1」ずつ純粋に増える
 
 	//前隙15f
 	if (pkmn->frameCounter <= params.startupFrame) {

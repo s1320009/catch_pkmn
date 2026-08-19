@@ -13,7 +13,8 @@ typedef enum {
 	PKMN_STATE_MOVE,
 	PKMN_STATE_ATTACK,
 	PKMN_STATE_STAY,
-	PKMN_STATE_DASH
+	PKMN_STATE_DASH,
+	PKMN_STATE_BOUNCE
 }PkmnState;
 
 // ==========================================================
@@ -38,6 +39,7 @@ typedef struct {
 	Vector2 initialPos;	// ポケモンの初期位置
 	Vector2 speed;		// ポケモンの"現在の"移動速度
 	PkmnState state;	// ポケモンの状態
+	PkmnState prevState;
 	int frameCounter;   // ポケモンの技をフレームで管理
 	float timer;		// ポケモンの状態遷移用タイマー
 	float rotation;		// ポケモンの回転角度（度）- MEWTWO ATTACK用
