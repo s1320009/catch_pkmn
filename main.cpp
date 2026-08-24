@@ -17,12 +17,7 @@
 
 void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager, ProjectileManager* projectileManager) {
 	// プレイヤーのリセット
-	player->life = 1;
-	player->position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
-	player->speed = { 0.0f, 0.0f };
-	player->state = PLAYER_STATE_FINE;
-	player->invincibleFrame = 0;
-	player->isInvincible = false;
+	*player = CreatePlayer();
 
 	// ボールのリセット
 	*ball = CreateBall(); // 丸ごと初期状態で上書き
@@ -157,7 +152,7 @@ int main() {
 				CheckCollisions(&ball, &pkmnManager, &player);
 
 				// 🌟 プレイヤーが死んだらコンティニュー画面へ！
-				if (player.state == PLAYER_STATE_DEAD) {
+				if (player.playerState == PLAYER_STATE_DEAD) {
 					gameState = STATE_CONTINUE;
 				}
 

@@ -1,16 +1,16 @@
 #pragma once
+#include "Component.h"
 #include "raylib.h"
 #include "MEWTWO.h"
 #include "pkmn.h"
 
 // プレイヤーの状態を表す列挙型
-typedef enum {
+enum PlayerState {
 	PLAYER_STATE_FINE,
 	PLAYER_STATE_DEAD
-} PlayerState;
-
+};
 // プレイヤーの構造体
-typedef struct {
+struct Player{
 	Vector2 position;	// プレイヤーの位置
 	Vector2 speed;		// プレイヤーの移動速度
 	Vector2 size;		// プレイヤーのサイズ
@@ -18,11 +18,31 @@ typedef struct {
 	int life;			// プレイヤーの残りライフ
 	bool isInvincible;	// プレイヤーが無敵状態かどうか
 	int invincibleFrame; // 無敵時間のタイマー
-	PlayerState state;	// プレイヤーの状態
-} Player;
+	PlayerState playerState;	// プレイヤーの状態
+};
 
 Player CreatePlayer();
 void UpdatePlayer(Player* player);
 void DrawPlayer(Player player);
 
 void CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManager, Player* player);
+
+
+//=========================================================================================
+//=========================================================================================
+
+//class Player : public Component {
+//public:
+//	Vector2 speed = { 0.0f, 0.0f };
+//	int life = 1;
+//	bool isInvincible = false;
+//	int invincibleFrame = 0;
+//	PlayerState playerState = PLAYER_STATE_FINE;
+//	Color color = RED;
+//
+//	Player();
+//	void Update() override;
+//	void Draw() override;
+//
+//	void CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManager);
+//};
