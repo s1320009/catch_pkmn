@@ -15,9 +15,15 @@
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
 
-void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager, ProjectileManager* projectileManager) {
-	// プレイヤーのリセット
-	*player = CreatePlayer();
+void ResetGame(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, ProjectileManager* projectileManager) {
+//void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager, ProjectileManager* projectileManager) {
+	// プレイヤーのリセット      GameObject* playerObjectを消して *player = CreatePlayer();にすると旧式・・・・・・・・・1/7
+	//player = CreatePlayer(); 
+	playerObject->position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
+	playerObject->scale = { 50.0f, 50.0f };
+	auto* player = playerObject->GetComponent<Player>();
+	if (player == nullptr) return;
+	player->Reset();
 
 	// ボールのリセット
 	*ball = CreateBall(); // 丸ごと初期状態で上書き
@@ -41,7 +47,8 @@ void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager, ProjectileM
 void CheckCollisions(Ball* ball, PkmnManager* pkmnManager, Player* player) {		//衝突判定はいろんなやつらがぶつかるからここに置く　正しいかしらん
 
 	// 🛡️ 1. プレイヤーと敵・弾の当たり判定（CheckPlayerHurt を呼び出す）
-	CheckPlayerHurt(GetMewtwoProjectileManager(), pkmnManager, player);
+	//CheckPlayerHurt(GetMewtwoProjectileManager(), pkmnManager, player);・・・・・・・・・・・2/7
+	player->CheckPlayerHurt(GetMewtwoProjectileManager(), pkmnManager);
 
 	// ⚽ 2. ボールとポケモンの当たり判定
 	if (ball->state == BALL_FLYING) {
@@ -104,12 +111,16 @@ int main() {
 	
 	InitializeStateSelect();
 	InitializeContinueSelect();
-	Player player = CreatePlayer();
 	Ball ball = CreateBall();
 	PkmnManager pkmnManager{};
 	ProjectileManager projectileManager{};
 	BlinkingText text;
 	
+	//Player player = CreatePlayer();・・・・・・・・・・・・・・・・3/7
+	GameObject playerObject(0, "Player", "Player");
+	auto* player = playerObject.AddComponent<Player>();
+	playerObject.position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
+	playerObject.scale = { 50.0f, 50.0f };
 
 	//ロード
 	Texture2D bgTexture = LoadTexture("resources/backColor.png");
@@ -134,25 +145,33 @@ int main() {
 				UpdateBlinkingText(text);
 				if (STATE_SELECT != gameState) {
 					LoadStage(selectRect, &pkmnManager);
-					ResetGame(&player, &ball, &pkmnManager, &projectileManager);
+					ResetGame(&playerObject, &ball, &pkmnManager, &projectileManager);
+					//ResetGame(&player, &ball, &pkmnManager, &projectileManager);・・・・・・・・4/7
 				}
 				break;
 			case STATE_RULE:
 				// ルール画面の処理
-				UpdateRule(&player, &ball, &pkmnManager, &gameState);
+				UpdateRule(&playerObject, &ball, &pkmnManager, &gameState);
 				break;
 			case STATE_GAME:
 				// ゲーム画面の処理
 				// Update
-				UpdatePlayer(&player);
-				UpdateBall(&ball, &player);
-				UpdatePkmnManager(&pkmnManager, player.position);
+
+				//UpdatePlayer(&player);・・・・・・・・・・・・・・・・・・・・・・・・・・・・5/7
+				//UpdateBall(&ball, &player);
+				//UpdatePkmnManager(&pkmnManager, player.position);
+				player->Update();
+				//UpdateBall(&ball, player);
+				UpdateBall(&ball, &playerObject);
+				UpdatePkmnManager(&pkmnManager, playerObject.position);
 				UpdateProjectileManager(GetMewtwoProjectileManager());
 
-				CheckCollisions(&ball, &pkmnManager, &player);
+				//CheckCollisions(&ball, &pkmnManager, &player);・・・・・・・・・・・・・・
+				CheckCollisions(&ball, &pkmnManager, player);
 
 				// 🌟 プレイヤーが死んだらコンティニュー画面へ！
-				if (player.playerState == PLAYER_STATE_DEAD) {
+				if (player->playerState == PLAYER_STATE_DEAD) {
+					//if (player.playerState == PLAYER_STATE_DEAD) {・・・・・・・・・・・・・・6/7
 					gameState = STATE_CONTINUE;
 				}
 
@@ -177,7 +196,9 @@ int main() {
 			case STATE_CONTINUE:
 				// 続行の処理
 				// 🌟 背景で敵だけを動かしたいので、プレイヤー以外をUpdateする！
-				UpdatePkmnManager(&pkmnManager, player.position);
+				
+				//UpdatePkmnManager(&pkmnManager, player.position);・・・・・・・・・・・・・・7/7
+				UpdatePkmnManager(&pkmnManager, playerObject.position);
 				UpdateProjectileManager(GetMewtwoProjectileManager());
 				UpdateBlinkingText(text);
 				UpdateContinueSelect();
@@ -185,7 +206,8 @@ int main() {
 				// 「スペースキーでコンティニュー（今やったステージをリトライ）」
 				if (IsKeyPressed(KEY_SPACE)) {
 					// 💡 ここでプレイヤーのライフや位置、ポケモンたちをリセットする処理を呼ぶ！
-					ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager());
+					//ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager());・・・・・・・・・・・8/7
+					ResetGame(&playerObject, &ball, &pkmnManager, GetMewtwoProjectileManager());
 					continueSelectRect = 0; // コンティニュー画面の選択を初期化
 				}
 				break;
@@ -195,7 +217,8 @@ int main() {
 
 				// 「スペースキーでタイトルに戻る」など
 				if (IsKeyPressed(KEY_SPACE)) {
-					ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager()); // ゲームをリセット
+					//ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager()); ・・・・・・・・・・・・・・9/7
+					ResetGame(&playerObject, &ball, &pkmnManager, GetMewtwoProjectileManager()); 
 					gameState = STATE_TITLE;
 				}
 				break;
@@ -223,20 +246,27 @@ int main() {
 			DrawBlinkingText(text, japaneseFont, "Press SPACE", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_RULE:
-			DrawRule(&player,&ball,&pkmnManager);
+			//DrawRule(&player,&ball,&pkmnManager);・・・・・・・・・・・・・・・・・・・・・・・10/7
+			DrawRule(&playerObject,&ball,&pkmnManager);
 			DrawBlinkingText(text, japaneseFont, "Press B to back", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_GAME:
 			DrawTexture(bgTexture, 0, 0, WHITE);
 			DrawText("press P to pause", 10, 10, 30, WHITE);
-			DrawPlayer(player);
+
+			//DrawPlayer(player);
+			player->Draw();
+			
 			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 			break;
 		case STATE_PAUSE:
 			DrawTexture(bgTexture, 0, 0, WHITE);
-			DrawPlayer(player);
+
+			//DrawPlayer(player);
+			player->Draw();
+
 			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
 			DrawProjectileManager(*GetMewtwoProjectileManager());
@@ -256,7 +286,10 @@ int main() {
 		case STATE_CLEAR:
 			// 背景はクリアした瞬間のゲーム画面をそのまま残して、薄くフィルターをかけるとおしゃれです
 			DrawTexture(bgTexture, 0, 0, WHITE);
-			DrawPlayer(player);
+
+			//DrawPlayer(player);
+			player->Draw();
+
 			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
 			DrawProjectileManager(*GetMewtwoProjectileManager());

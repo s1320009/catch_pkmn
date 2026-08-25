@@ -31,7 +31,8 @@ Ball CreateBall() {
     return ball;
 }
 
-void UpdateBall(Ball* ball, Player* player) {
+void UpdateBall(Ball* ball, GameObject* playerObject) {
+    auto* player = playerObject->GetComponent<Player>();
     //消える処理で使う
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
@@ -43,7 +44,7 @@ void UpdateBall(Ball* ball, Player* player) {
     switch (ball->state) {
         case BALL_WAIT_X:
             // 待機状態ではボールを手元に固定して各種パワーをリセット
-            ball->position = player->position;
+            ball->position = playerObject->position;
             ball->speed = { 0.0f, 0.0f };
             ball->chargePower = { 0.0f, 0.0f };
             ball->chargeGaugeX = 0.0f;
@@ -64,7 +65,7 @@ void UpdateBall(Ball* ball, Player* player) {
             break;
 
         case BALL_CHARGE_X:
-            ball->position = player->position;
+            ball->position = playerObject->position;
             //横ゲージの増減処理
             if (ball->isGaugeIncreasing) {
                 ball->chargeGaugeX += gaugeSpeed;
@@ -89,7 +90,7 @@ void UpdateBall(Ball* ball, Player* player) {
             break;
 
         case BALL_WAIT_Y:
-			ball->position = player->position;    //手元に戻す
+			ball->position = playerObject->position;    //手元に戻す
             // Bキーが押されたら、横の受付（最初の状態）に巻き戻す
             if (IsKeyPressed(KEY_B)) {
                 ball->state = BALL_WAIT_X;
@@ -103,7 +104,7 @@ void UpdateBall(Ball* ball, Player* player) {
             break;
 
         case BALL_CHARGE_Y:
-            ball->position = player->position;    //手元に戻す
+            ball->position = playerObject->position;    //手元に戻す
             // Bキーが押されたら、縦のチャージを中断して縦の入力待ちへ巻き戻す
             if (IsKeyPressed(KEY_B)) {
                 ball->chargeGaugeY = 0.0f;
@@ -136,7 +137,7 @@ void UpdateBall(Ball* ball, Player* player) {
             break;
 
 		case BALL_AIMING:
-            ball->position = player->position;    //手元に戻す
+            ball->position = playerObject->position;    //手元に戻す
             // Bキーが押されたら、縦のパワーをクリアして縦の入力待ちに戻る
             if (IsKeyPressed(KEY_B)) {
                 ball->chargePower.y = 0.0f;
