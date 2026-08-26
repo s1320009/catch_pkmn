@@ -1,4 +1,5 @@
 #include "Ball.h"
+#include "TextureAnimeComponent.h"
 #include "raylib.h"
 
 //windowは上がマイナス
@@ -33,6 +34,21 @@ Ball CreateBall() {
 
 void UpdateBall(Ball* ball, GameObject* playerObject) {
     auto* player = playerObject->GetComponent<Player>();
+    auto* pAnime = playerObject->GetComponent<TextureAnimeComponent>();
+	//アニメーションの切り替え
+    switch (ball->state) {
+        case BALL_WAIT_X:
+            if (pAnime->animeTexture != &pIdleAnime) {
+                pAnime->SetAnimeTexture(pIdleAnime);
+            }
+            break;
+		case BALL_FLYING:
+            if (pAnime->animeTexture != &pThrowAnime) {
+                pAnime->SetAnimeTexture(pThrowAnime);
+            }
+			break;
+    }
+
     //消える処理で使う
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();

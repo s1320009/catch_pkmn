@@ -186,7 +186,7 @@ void UpdateRule(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, 
 
 	case 1:
 		// 移動の仕方
-		player->Update();
+		playerObject->Update();
 
 		{
 			float dx = playerObject->position.x - moveStartPos.x;
@@ -205,7 +205,7 @@ void UpdateRule(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, 
 
 	case 2:
 		// 球の打ち方
-		player->Update();
+		playerObject->Update();
 		UpdateBall(ball, playerObject);
 
 		// 1回でも発射したら次へ
@@ -220,7 +220,7 @@ void UpdateRule(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, 
 		break;
 
 	case 3:
-		player->Update();
+		playerObject->Update();
 		UpdateBall(ball, playerObject);
 		UpdatePkmnManager(pkmnManager, playerObject->position);
 
@@ -262,7 +262,6 @@ void UpdateRule(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, 
 }
 
 void DrawRule(GameObject* playerObject, const Ball* ball, const PkmnManager* pkmnManager) {
-	auto* player = playerObject->GetComponent<Player>();
 	DrawPkmnManager(*pkmnManager);
 
 	if (ruleStep == 0) {
@@ -274,26 +273,26 @@ void DrawRule(GameObject* playerObject, const Ball* ball, const PkmnManager* pkm
 	else if (ruleStep == 1) {
 		DrawText("Drag with left click to move", 100, 100, 20, BLACK);
 		DrawText("Move around to catch pkmn!", 100, 150, 20, BLACK);
-		player->Draw();
 		DrawBall(*ball);
+		playerObject->Draw();
 	}
 	else if (ruleStep == 2) {
 		DrawText("Press A/D to charge power", 100, 100, 20, BLACK);
 		DrawText("Then press W/S to charge height", 100, 150, 20, BLACK);
 		DrawText("Finally press SPACE to launch the ball", 100, 200, 20, BLACK);
-		player->Draw();
 		DrawBall(*ball);
+		playerObject->Draw();
 	}
 	else if (ruleStep == 3) {
 		DrawText("Hit pkmn with the ball!", 100, 100, 20, BLACK);
 		DrawText("Press B to back to previous step", 100, 150, 20, BLACK);
-		player->Draw();
 		DrawBall(*ball);
+		playerObject->Draw();
 	}
 	else if (ruleStep == 4) {
 		DrawText("Good luck!", 100, 100, 30, BLACK);
 		DrawText("Press SPACE to go back to stage select", 100, 150, 20, BLACK);
-		player->Draw();
 		DrawBall(*ball);
+		playerObject->Draw();
 	}
 }

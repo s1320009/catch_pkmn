@@ -4,8 +4,8 @@
 // ============================================
 // TextureComponent
 // ============================================
-TextureComponent::TextureComponent(const char* filePath) {
-    texture = LoadTexture(filePath);	// テクスチャをロード	textureはAddComponent（make_shared）でGameObjectにアタッチされるときに実体化するのでそれぞれ別の場所を持っている
+TextureComponent::TextureComponent(Texture2D texture) 
+    : texture(texture) {	// テクスチャをロード	textureはAddComponent（make_shared）でGameObjectにアタッチされるときに実体化するのでそれぞれ別の場所を持っている
 }
 
 TextureComponent::~TextureComponent() {

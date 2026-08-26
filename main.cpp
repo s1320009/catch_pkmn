@@ -1,4 +1,6 @@
 ﻿#include "raylib.h"
+#include "Texture.h"
+#include "TextureAnimeComponent.h"
 #include "Music.h"
 #include "Editor.h"
 #include "Ball.h"
@@ -22,6 +24,7 @@ void ResetGame(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, P
 	playerObject->position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
 	playerObject->scale = { 50.0f, 50.0f };
 	auto* player = playerObject->GetComponent<Player>();
+	auto* pIdle = playerObject->GetComponent<TextureAnimeComponent>();
 	if (player == nullptr) return;
 	player->Reset();
 
@@ -105,6 +108,13 @@ int main() {
 	SetTargetFPS(60);
 	InitAudioDevice();
 
+	//ロード
+	Font japaneseFont = LoadFontEx("resources/KH-Dot-Hibiya-32.ttf", 32, codepoints.data(), codepointCount);
+	TraceLog(LOG_INFO, "glyphCount=%d textureId=%u", japaneseFont.glyphCount, japaneseFont.texture.id);
+
+	LoadAllTexture();
+	LoadMusic();
+
 	//初期化
 	InitializeEditor();
 	gameState = STATE_TITLE;			//もちろんタイトルで初期化
@@ -119,15 +129,9 @@ int main() {
 	//Player player = CreatePlayer();・・・・・・・・・・・・・・・・3/7
 	GameObject playerObject(0, "Player", "Player");
 	auto* player = playerObject.AddComponent<Player>();
+	auto* pIdle = playerObject.AddComponent<TextureAnimeComponent>(pIdleAnime);	
 	playerObject.position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
-	playerObject.scale = { 50.0f, 50.0f };
-
-	//ロード
-	Texture2D bgTexture = LoadTexture("resources/backColor.png");
-	Font japaneseFont = LoadFontEx("resources/KH-Dot-Hibiya-32.ttf", 32, codepoints.data(), codepointCount);
-	TraceLog(LOG_INFO, "glyphCount=%d textureId=%u", japaneseFont.glyphCount, japaneseFont.texture.id);
-
-	LoadMusic();
+	playerObject.scale = { 64.0f, 64.0f };
 
 	while (!WindowShouldClose()) {
 		UpdateMusic(gameState);
@@ -160,7 +164,7 @@ int main() {
 				//UpdatePlayer(&player);・・・・・・・・・・・・・・・・・・・・・・・・・・・・5/7
 				//UpdateBall(&ball, &player);
 				//UpdatePkmnManager(&pkmnManager, player.position);
-				player->Update();
+				playerObject.Update();
 				//UpdateBall(&ball, player);
 				UpdateBall(&ball, &playerObject);
 				UpdatePkmnManager(&pkmnManager, playerObject.position);
@@ -253,21 +257,23 @@ int main() {
 		case STATE_GAME:
 			DrawTexture(bgTexture, 0, 0, WHITE);
 			DrawText("press P to pause", 10, 10, 30, WHITE);
-
-			//DrawPlayer(player);
-			player->Draw();
 			
 			DrawBall(ball);
+
+			//DrawPlayer(player);
+			playerObject.Draw();
+
 			DrawPkmnManager(pkmnManager);
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 			break;
 		case STATE_PAUSE:
 			DrawTexture(bgTexture, 0, 0, WHITE);
 
-			//DrawPlayer(player);
-			player->Draw();
-
 			DrawBall(ball);
+
+			//DrawPlayer(player);
+			playerObject.Draw();
+
 			DrawPkmnManager(pkmnManager);
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
@@ -288,7 +294,7 @@ int main() {
 			DrawTexture(bgTexture, 0, 0, WHITE);
 
 			//DrawPlayer(player);
-			player->Draw();
+			playerObject.Draw();
 
 			DrawBall(ball);
 			DrawPkmnManager(pkmnManager);
@@ -313,7 +319,7 @@ int main() {
 
 	//アンロード
 	UnloadFont(japaneseFont);
-	UnloadTexture(bgTexture);
+	UnloadAllTexture();
 	UnloadMusic();
 	ShutdownEditor();			//エディタの終了処理
 

@@ -152,6 +152,7 @@
     <ClCompile Include="Rule.cpp" />
     <ClCompile Include="Stage.cpp" />
     <ClCompile Include="StateSelect.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureAnimeComponent.cpp" />
     <ClCompile Include="TextureComponent.cpp" />
   </ItemGroup>
@@ -172,14 +173,16 @@
     <ClInclude Include="pkmn.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Rule.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureAnimeComponent.h" />
     <ClInclude Include="Stage.h" />
     <ClInclude Include="StateSelect.h" />
     <ClInclude Include="TextureComponent.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\OneDrive\Desktop\画像\Drawing\Asperite\player_idle.png" />
+    <Image Include="..\..\..\OneDrive\Desktop\画像\Drawing\Asperite\player_throw.png" />
     <Image Include="resources\backColor.png" />
-    <Image Include="resources\Dtorio-Sheet.png" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="resources\KH-Dot-Hibiya-32.ttf" />

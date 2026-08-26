@@ -169,7 +169,7 @@ Player::Player() {
 void Player::Reset() {
 	if (gameObject == nullptr) return;
 	gameObject->position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
-	gameObject->scale = { 50.0f, 50.0f };
+	gameObject->scale = { 64.0f, 64.0f };
 	this->speed = { 0.0f, 0.0f };
 	this->life = 1;
 	this->isInvincible = false;
@@ -266,7 +266,7 @@ void Player::Draw() {
 	switch (this->playerState) {
 		case PLAYER_STATE_FINE: {
 			if (!isInvincible){
-				DrawRectangle(gameObject->position.x - gameObject->scale.x / 2, gameObject->position.y - gameObject->scale.y / 2, gameObject->scale.x, gameObject->scale.y, color);
+				//DrawRectangle(gameObject->position.x - gameObject->scale.x / 2, gameObject->position.y - gameObject->scale.y / 2, gameObject->scale.x, gameObject->scale.y, color);
 			}
 			break;
 		}
