@@ -1,4 +1,4 @@
-#include "MEWTWO.h"
+#include "Mewtwo.h"
 #include "raylib.h"
 #include <cmath>
 

@@ -5,7 +5,7 @@
 #include "Editor.h"
 #include "Ball.h"
 #include "pkmn.h"
-#include "MEWTWO.h"
+#include "Mewtwo.h"
 #include "player.h"
 #include "BlinkingText.h"
 #include "GameState.h"

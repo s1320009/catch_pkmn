@@ -1,5 +1,5 @@
 #pragma once
-#include "pkmn.h"
+#include "Pkmn.h"
 
 typedef struct {
 	PkmnBlueprint blueprint;

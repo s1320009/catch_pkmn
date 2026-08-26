@@ -1,8 +1,8 @@
 #pragma once
 #include "Component.h"
 #include "raylib.h"
-#include "MEWTWO.h"
-#include "pkmn.h"
+#include "Mewtwo.h"
+#include "Pkmn.h"
 
 // プレイヤーの状態を表す列挙型
 enum PlayerState {

@@ -1,5 +1,5 @@
 #pragma once
-#include "pkmn.h"
+#include "Pkmn.h"
 
 // ==========================================================
 // Projectile（弾）の定義 - MEWTWO専用

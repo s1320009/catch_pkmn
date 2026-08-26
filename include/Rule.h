@@ -3,7 +3,7 @@
 #include  "GameState.h"
 #include "Player.h"
 #include "Ball.h"
-#include  "pkmn.h"
+#include  "Pkmn.h"
 
 //void InitializeRule(Player* player, Ball* ball, PkmnManager* pkmnManager);
 //void UpdateRule(Player* player, Ball* ball, PkmnManager* pkmnManager, GameState* gameState);

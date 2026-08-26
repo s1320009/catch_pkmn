@@ -1,7 +1,7 @@
 #include "pkmn.h"
 #include "raylib.h"
 #include <cmath>
-#include "MEWTWO.h"
+#include "Mewtwo.h"
 
 #define BOUNCE_DURATION 0.5f // 反射状態の持続時間（秒）
 
