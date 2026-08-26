@@ -24,9 +24,10 @@ void ResetGame(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, P
 	playerObject->position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
 	playerObject->scale = { 50.0f, 50.0f };
 	auto* player = playerObject->GetComponent<Player>();
-	auto* pIdle = playerObject->GetComponent<TextureAnimeComponent>();
+	auto* pAnime = playerObject->GetComponent<TextureAnimeComponent>();
 	if (player == nullptr) return;
 	player->Reset();
+	pAnime->SetAnimeTexture(pIdleAnime);
 
 	// ボールのリセット
 	*ball = CreateBall(); // 丸ごと初期状態で上書き
@@ -109,8 +110,8 @@ int main() {
 	InitAudioDevice();
 
 	//ロード
-	Font japaneseFont = LoadFontEx("resources/KH-Dot-Hibiya-32.ttf", 32, codepoints.data(), codepointCount);
-	TraceLog(LOG_INFO, "glyphCount=%d textureId=%u", japaneseFont.glyphCount, japaneseFont.texture.id);
+	Font myFont = LoadFontEx("resources/myFont.ttf", 32, codepoints.data(), codepointCount);
+	TraceLog(LOG_INFO, "glyphCount=%d textureId=%u", myFont.glyphCount, myFont.texture.id);
 
 	LoadAllTexture();
 	LoadMusic();
@@ -241,18 +242,18 @@ int main() {
 
 		switch (gameState) {
 		case STATE_TITLE:
-			DrawTextEx(japaneseFont, "Catch pkmn", { 500, 300 }, 40, 1, BLACK);
-			DrawBlinkingText(text, japaneseFont, "Press SPACE", { 550, 600 }, 20, BLACK);
+			DrawTextEx(myFont, "Catch pkmn", { 500, 300 }, 40, 1, BLACK);
+			DrawBlinkingText(text, myFont, "Press SPACE", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_SELECT:
 			DrawStateSelect();
-			DrawTextEx(japaneseFont, "Select stage", { 500, 200 }, 40, 1, BLACK);
-			DrawBlinkingText(text, japaneseFont, "Press SPACE", { 550, 600 }, 20, BLACK);
+			DrawTextEx(myFont, "Select stage", { 500, 200 }, 40, 1, BLACK);
+			DrawBlinkingText(text, myFont, "Press SPACE", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_RULE:
 			//DrawRule(&player,&ball,&pkmnManager);・・・・・・・・・・・・・・・・・・・・・・・10/7
 			DrawRule(&playerObject,&ball,&pkmnManager);
-			DrawBlinkingText(text, japaneseFont, "Press B to back", { 550, 600 }, 20, BLACK);
+			DrawBlinkingText(text, myFont, "Press B to back", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_GAME:
 			DrawTexture(bgTexture, 0, 0, WHITE);
@@ -278,7 +279,7 @@ int main() {
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
 			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 0, 0, 150 }); // 半透明の黒いオーバーレイ 色の四つ目の引数がポイント
-			DrawTextEx(japaneseFont, "Pause", { 590, 300 }, 40, 1, BLACK);
+			DrawTextEx(myFont, "Pause", { 590, 300 }, 40, 1, BLACK);
 			break;
 		case STATE_CONTINUE:
 			DrawTexture(bgTexture, 0, 0, WHITE);
@@ -286,7 +287,7 @@ int main() {
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
 			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 0, 0, 200 }); // 半透明の黒いオーバーレイ poseより濃い
-			DrawTextEx(japaneseFont, "Continue ?", { 550, 300 }, 40, 1, WHITE);
+			DrawTextEx(myFont, "Continue ?", { 550, 300 }, 40, 1, WHITE);
 			DrawContinueSelect();
 			break;
 		case STATE_CLEAR:
@@ -304,9 +305,9 @@ int main() {
 			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 200, 100, 100 });
 
 			// クリアの文字と操作案内
-			DrawTextEx(japaneseFont, "STAGE CLEAR!", { 440, 300 }, 60, 1, GOLD);
-			DrawTextEx(japaneseFont, "THANK YOU FOR PLAYING!", { 460, 450 }, 30, 1, GOLD);
-			DrawBlinkingText(text, japaneseFont, "PRESS SPACE", { 550, 600 }, 20, WHITE);
+			DrawTextEx(myFont, "STAGE CLEAR!", { 440, 300 }, 60, 1, GOLD);
+			DrawTextEx(myFont, "THANK YOU FOR PLAYING!", { 460, 450 }, 30, 1, GOLD);
+			DrawBlinkingText(text, myFont, "PRESS SPACE", { 550, 600 }, 20, WHITE);
 			break;
 		case STATE_EDITOR:
 			ClearBackground(LIGHTGRAY);
@@ -318,7 +319,7 @@ int main() {
 	}
 
 	//アンロード
-	UnloadFont(japaneseFont);
+	UnloadFont(myFont);
 	UnloadAllTexture();
 	UnloadMusic();
 	ShutdownEditor();			//エディタの終了処理

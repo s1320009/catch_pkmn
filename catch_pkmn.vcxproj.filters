@@ -66,9 +66,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="resources\my_font.ttc">
-      <Filter>リソース ファイル</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ball.h">
@@ -135,10 +132,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Font Include="resources\YDWaosagi.otf">
-      <Filter>リソース ファイル</Filter>
-    </Font>
-    <Font Include="resources\KH-Dot-Hibiya-32.ttf">
+    <Font Include="resources\myFont.ttf">
       <Filter>リソース ファイル</Filter>
     </Font>
   </ItemGroup>
