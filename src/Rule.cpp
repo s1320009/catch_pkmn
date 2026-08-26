@@ -158,7 +158,7 @@ void InitializeRule(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManag
 	player->Reset();
 	
 	*ball = CreateBall();
-	LoadStage(selectRect, pkmnManager);
+	LoadStage(0, pkmnManager);
 
 	ruleStep = 0;
 	initialized = true;
