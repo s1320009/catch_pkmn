@@ -75,7 +75,7 @@ catch_pkmn/
 │   ├── pauseSE.mp3                 # ポーズSE
 │   └── myFont.ttf                  # 日本語フォントデータ
 └── catch_pkmn.slnx                 # Visual Studio ソリューション構成ファイル
-
+```
 ## 👤 作者（Author）
 - **Name**: 菊池 誠人 (Makoto Kikuchi)
 - **Affiliation**: 会津大学 コンピュータ理工学部
