@@ -1,13 +1,15 @@
 #pragma once
 #include "raylib.h"
 #include "Component.h"
-
 #include <string>
 #include <vector>
 #include <memory>		// スマートポインタを使うために必要 メモリを安全に管理するためのライブラリ
 
 using namespace std;
 
+// ============================================
+// GameObject クラス
+// ============================================
 class GameObject {
 public:
 	int id = 0;

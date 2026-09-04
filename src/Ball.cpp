@@ -1,4 +1,5 @@
 #include "Ball.h"
+#include "TextureAnimeComponent.h"
 #include "raylib.h"
 
 //windowは上がマイナス
@@ -31,7 +32,23 @@ Ball CreateBall() {
     return ball;
 }
 
-void UpdateBall(Ball* ball, Player* player) {
+void UpdateBall(Ball* ball, GameObject* playerObject) {
+    auto* player = playerObject->GetComponent<Player>();
+    auto* pAnime = playerObject->GetComponent<TextureAnimeComponent>();
+	//アニメーションの切り替え
+    switch (ball->state) {
+        case BALL_WAIT_X:
+            if (pAnime->animeTexture != &pIdleAnime) {
+                pAnime->SetAnimeTexture(pIdleAnime);
+            }
+            break;
+		case BALL_FLYING:
+            if (pAnime->animeTexture != &pThrowAnime) {
+                pAnime->SetAnimeTexture(pThrowAnime);
+            }
+			break;
+    }
+
     //消える処理で使う
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
@@ -39,21 +56,18 @@ void UpdateBall(Ball* ball, Player* player) {
     //ゲージが往復して増減するスピード
     float gaugeSpeed = 2.0f * GetFrameTime(); //約0.5秒でMAXになる速度
 
-    //ボールの初期位置
-	Vector2 initialPos = player->position;
-
 	//ステートマシンの処理
     switch (ball->state) {
         case BALL_WAIT_X:
             // 待機状態ではボールを手元に固定して各種パワーをリセット
-            ball->position = initialPos;
+            ball->position = playerObject->position;
             ball->speed = { 0.0f, 0.0f };
             ball->chargePower = { 0.0f, 0.0f };
             ball->chargeGaugeX = 0.0f;
             ball->chargeGaugeY = 0.0f;
 
             //プレイヤーが４ンでいるときはchargeできないようにする
-            if (player->state == PLAYER_STATE_DEAD) {
+            if (player->playerState == PLAYER_STATE_DEAD) {
 				ball->state = BALL_WAIT_X;
 				break;
             }
@@ -67,6 +81,7 @@ void UpdateBall(Ball* ball, Player* player) {
             break;
 
         case BALL_CHARGE_X:
+            ball->position = playerObject->position;
             //横ゲージの増減処理
             if (ball->isGaugeIncreasing) {
                 ball->chargeGaugeX += gaugeSpeed;
@@ -91,7 +106,7 @@ void UpdateBall(Ball* ball, Player* player) {
             break;
 
         case BALL_WAIT_Y:
-			ball->position = initialPos;    //手元に戻す
+			ball->position = playerObject->position;    //手元に戻す
             // Bキーが押されたら、横の受付（最初の状態）に巻き戻す
             if (IsKeyPressed(KEY_B)) {
                 ball->state = BALL_WAIT_X;
@@ -105,7 +120,7 @@ void UpdateBall(Ball* ball, Player* player) {
             break;
 
         case BALL_CHARGE_Y:
-            ball->position = initialPos;    //手元に戻す
+            ball->position = playerObject->position;    //手元に戻す
             // Bキーが押されたら、縦のチャージを中断して縦の入力待ちへ巻き戻す
             if (IsKeyPressed(KEY_B)) {
                 ball->chargeGaugeY = 0.0f;
@@ -138,7 +153,7 @@ void UpdateBall(Ball* ball, Player* player) {
             break;
 
 		case BALL_AIMING:
-            ball->position = initialPos;    //手元に戻す
+            ball->position = playerObject->position;    //手元に戻す
             // Bキーが押されたら、縦のパワーをクリアして縦の入力待ちに戻る
             if (IsKeyPressed(KEY_B)) {
                 ball->chargePower.y = 0.0f;
@@ -222,10 +237,10 @@ void DrawBall(Ball ball) {
     }
 
     if (ball.state == BALL_WAIT_X) {
-        DrawText("PRESS [A/D] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+        //DrawText("PRESS [A/D] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
     }
     if (ball.state == BALL_WAIT_Y) {
-        DrawText("PRESS [W/S] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+        //DrawText("PRESS [W/S] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
     }
 
     // 2. 状態に応じたチャージゲージUIの描画
@@ -294,6 +309,6 @@ void DrawBall(Ball ball) {
                 DrawCircleV(simPos, 3, MAROON);
             }
         }
-                         DrawText("PRESS [SPACE] TO LAUNCH / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
-                     }
-                 }
+        //DrawText("PRESS [SPACE] TO LAUNCH / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+    }
+}

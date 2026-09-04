@@ -14,3 +14,4 @@ void GameObject::Draw() {
 		comp->Draw();	// コンポーネントのDraw関数を呼び出す
 	}
 }
+

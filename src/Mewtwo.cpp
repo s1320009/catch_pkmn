@@ -1,4 +1,4 @@
-#include "MEWTWO.h"
+#include "Mewtwo.h"
 #include "raylib.h"
 #include <cmath>
 
@@ -42,7 +42,7 @@ void UpdateMewtwoAttack(Pkmn* pkmn) {
 
 	MewtwoAttackParameters params = GetMewtwoAttackParameters();
 
-	pkmn->frameCounter++;
+	//pkmn->frameCounter++;
 
 	// 回転速度を適用
 	pkmn->rotation += params.rotationPerSec * GetFrameTime();
@@ -127,8 +127,8 @@ void UpdateMewtwoMove(Pkmn* pkmn) {
 	// MEWTWO MOVE のパラメータを取得
 	MewtwoMoveParameters params = GetMewtwoMoveParameters();
 
-	pkmn->speed = { 0.0f, 0.0f };
-	pkmn->frameCounter++; // ➔ 毎フレーム「1」ずつ純粋に増える
+	//pkmn->speed = { 0.0f, 0.0f };
+	//pkmn->frameCounter++; // ➔ 毎フレーム「1」ずつ純粋に増える
 
 	//前隙15f
 	if (pkmn->frameCounter <= params.startupFrame) {
@@ -196,8 +196,8 @@ void DrawMewtwoAttack(Pkmn pkmn) {
 	DrawLineV(pkmn.position, lineEnd, YELLOW);
 
 	// デバッグ用：現在のフェーズと回転角度を表示
-	DrawText(TextFormat("frame: %d, Rotation: %.1f", pkmn.frameCounter, pkmn.rotation), 
-			 (int)pkmn.position.x - 50, (int)pkmn.position.y - 80, 12, WHITE);
+	//DrawText(TextFormat("frame: %d, Rotation: %.1f", pkmn.frameCounter, pkmn.rotation), 
+	//		 (int)pkmn.position.x - 50, (int)pkmn.position.y - 80, 12, WHITE);
 }
 
 // ==========================================================

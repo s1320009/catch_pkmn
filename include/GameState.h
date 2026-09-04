@@ -1,0 +1,12 @@
+#pragma once
+
+typedef enum {
+	STATE_TITLE,
+	STATE_SELECT,
+	STATE_RULE,
+	STATE_GAME,
+	STATE_PAUSE,
+	STATE_CONTINUE,
+	STATE_CLEAR,
+	STATE_EDITOR
+} GameState;
