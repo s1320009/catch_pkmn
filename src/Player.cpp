@@ -119,17 +119,15 @@ void Player::CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManage
 		// プレイヤーが無敵状態でない場合、弾との衝突判定を行う
 		for (int i = 0; i < manager->count; i++) {
 			Projectile* proj = &manager->projectiles[i];
-			if (proj->isActive) {
-				// プレイヤーと弾の衝突判定
-				if (CheckCollisionCircleRec(proj->position, proj->radius, { this->gameObject->position.x - this->gameObject->scale.x / 2, this->gameObject->position.y - this->gameObject->scale.y / 2, this->gameObject->scale.x, this->gameObject->scale.y })) {
-					// 衝突した場合、プレイヤーのライフを減らす
-					this->m_life--;
-					// 無敵時間をリセット
-					this->m_invincibleFrame = 60;
-					// 弾を非アクティブにする
-					proj->isActive = false;
-					break; // 一度のフレームで複数の弾に当たらないようにする
-				}
+
+			if(not proj->isActive) continue;
+
+			// プレイヤーと弾の衝突判定
+			if (CheckCollisionCircleRec(proj->position, proj->radius, { this->gameObject->position.x - this->gameObject->scale.x / 2, this->gameObject->position.y - this->gameObject->scale.y / 2, this->gameObject->scale.x, this->gameObject->scale.y })) {
+				this->m_life--;
+				this->m_invincibleFrame = 60;
+				proj->isActive = false;
+				break; // 一度のフレームで複数の弾に当たらないようにする
 			}
 		}
 
@@ -137,15 +135,14 @@ void Player::CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManage
 		for (int i = 0; i < pkmnManager->count; i++) {
 			Pkmn* enemy = &pkmnManager->list[i];
 
-			// 生きていて、画面内にいる敵だけチェックする
-			if (enemy->isActive && enemy->isVisible) {
+			if(not enemy->isActive) continue;
+			if (not enemy->isVisible) continue;
 
-				// 弾と同じように、円（敵）と四角（プレイヤー）の判定を行う！
-				if (CheckCollisionCircleRec(enemy->position, enemy->blueprint.radius, { gameObject->position.x - gameObject->scale.x / 2, gameObject->position.y - gameObject->scale.y / 2, gameObject->scale.x, gameObject->scale.y })) {
-					this->m_life--;
-					this->m_invincibleFrame = 60; // 1秒無敵
-					return;
-				}
+			// 弾と同じように、円（敵）と四角（プレイヤー）の判定を行う！
+			if (CheckCollisionCircleRec(enemy->position, enemy->blueprint.radius, { gameObject->position.x - gameObject->scale.x / 2, gameObject->position.y - gameObject->scale.y / 2, gameObject->scale.x, gameObject->scale.y })) {
+				this->m_life--;
+				this->m_invincibleFrame = 60; // 1秒無敵
+				return;
 			}
 		}
 	}
