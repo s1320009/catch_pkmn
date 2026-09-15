@@ -15,6 +15,9 @@ namespace //namespace {}で無名空間を作る　staticの領域展開バージョン　これはこの
 	int nextObjectId = 1;	//次に作るGameObjectのIDを管理する変数
 	bool isDragging = false;	//ドラッグ中かどうかを管理する変数
 	Vector2 dragOffset = { 0,0 };		//オフセット（オブジェクトの位置ークリックした位置）　新しい位置はマウスの位置＋オフセット
+	
+	bool isEditingName = false;		//オブジェクトの名前を編集しているか
+	string nameEditBuffer;
 
 	//シーンビューの矩形を取得する関数
 	Rectangle GetSceneRect() {
@@ -138,7 +141,12 @@ namespace //namespace {}で無名空間を作る　staticの領域展開バージョン　これはこの
 				30
 			};
 
-			if (object.get() == selectedObject) {
+			if (object.get() != selectedObject) {
+				DrawRectangleRec(itemRect, LIGHTGRAY);
+				DrawText(object->name.c_str(), 15, objectY + 5, 18, BLACK);
+			}
+
+			else if (object.get() == selectedObject) {
 				DrawRectangleRec(itemRect, SKYBLUE);
 				DrawText(object->name.c_str(), 20, objectY, 20, BLACK);
 			}
@@ -218,12 +226,59 @@ namespace //namespace {}で無名空間を作る　staticの領域展開バージョン　これはこの
 		int x = static_cast<int>(inspector.x + 15);
 		int y = 65;
 
-		DrawText("Name", x, y, 16, LIGHTGRAY);
-		DrawText(selectedObject->name.c_str(), x, y + 23, 18, RAYWHITE);
+		DrawText("Name", x, y, 16, GOLD);
+
+		Rectangle nameBox = {
+			static_cast<float>(x),
+			static_cast<float>(y + 20),
+			260.0f,
+			30.0f
+		};
+
+		if (isEditingName)
+		{
+			DrawRectangleRec(nameBox, RAYWHITE);
+			DrawRectangleLinesEx(nameBox, 2.0f, GOLD);
+
+			DrawText(
+				nameEditBuffer.c_str(),
+				x + 5,
+				y + 26,
+				18,
+				BLACK
+			);
+
+			// 編集中を示すカーソル
+			int textWidth = MeasureText(
+				nameEditBuffer.c_str(),
+				18
+			);
+
+			DrawLine(
+				x + 5 + textWidth,
+				y + 24,
+				x + 5 + textWidth,
+				y + 47,
+				BLACK
+			);
+		}
+		else
+		{
+			DrawRectangleRec(nameBox, DARKGRAY);
+			DrawRectangleLinesEx(nameBox, 1.0f, GRAY);
+
+			DrawText(
+				selectedObject->name.c_str(),
+				x + 5,
+				y + 26,
+				18,
+				RAYWHITE
+			);
+		}
 
 		y += 65;
 
-		DrawText("Tag", x, y, 16, LIGHTGRAY);
+		DrawText("Tag", x, y, 16, GOLD);
 		DrawText(selectedObject->tag.c_str(), x, y + 23, 18, RAYWHITE);
 
 		y += 65;
@@ -300,8 +355,8 @@ void InitializeEditor()
 	editorObjects.back()->position = { 500.0f, 300.0f };
 
 	AddEmptyObject();
-	editorObjects.back()->name = "Enemy";
-	editorObjects.back()->tag = "Enemy";
+	editorObjects.back()->name = "Pkmn";
+	editorObjects.back()->tag = "Pkmn";
 	editorObjects.back()->position = { 700.0f, 450.0f };
 }
 
@@ -314,6 +369,8 @@ void UpdateEditor() {
 
 	Vector2 mousePosition = GetMousePosition();
 
+	//============================================
+	//ヒエラルキー
 	Rectangle addButton = { 10, 40, 190, 30 };
 
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -340,7 +397,30 @@ void UpdateEditor() {
 
 			objectY += 35;
 		}
+	//============================================
 
+	
+	//============================================
+	//インスペクター
+		Rectangle inspector = GetInspectorRect();
+		
+		float x = (inspector.x + 15);
+		float y = 65;
+
+		Rectangle nameChange = {
+		x,
+		y,
+		200,
+		55
+		};
+
+		if (selectedObject != nullptr && CheckCollisionPointRec(mousePosition, nameChange)) {
+			isEditingName = true;
+			nameEditBuffer = selectedObject->name;
+		}
+
+	//============================================
+	// シーン
 		//Scene上のオブジェクトを選択
 		if (IsPointInScene(mousePosition)) {
 			selectedObject = FindObjectAtPosition(mousePosition);
@@ -366,6 +446,47 @@ void UpdateEditor() {
 	{
 		isDragging = false;
 	}
+	//============================================
+
+
+	//============================================
+	//名前のキーボード入力
+	if (isEditingName && selectedObject != nullptr) {
+		//最後の位置の文字を削除
+		if (IsKeyPressed(KEY_BACKSPACE) && !nameEditBuffer.empty()) {
+			nameEditBuffer.pop_back();
+		}
+
+		//EnterでObject->nameを確定
+		if (IsKeyPressed(KEY_ENTER)) {
+			if (!nameEditBuffer.empty()) {
+				selectedObject->name = nameEditBuffer;
+			}
+			isEditingName = false;
+		}
+
+		//エスケープで編集キャンセル
+		if (IsKeyPressed(KEY_ESCAPE)) {
+			isEditingName = false;
+			nameEditBuffer.clear();
+		}
+
+		//キーボードから入力された文字を取得
+		int key = GetCharPressed();	//ASCII文字を取得
+
+		while (key > 0) {
+			//ASCII文字
+			if (key >= 32 && key <= 126) {
+				nameEditBuffer += static_cast<char>(key);	//charにcastして変換
+			}
+
+			key = GetCharPressed();
+		}
+
+		//入力中の文字列をリアルタイムで反映
+		selectedObject->name = nameEditBuffer;
+	}
+
 }
 
 void DrawEditor()

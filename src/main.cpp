@@ -1,4 +1,5 @@
 ﻿#include "raylib.h"
+#include "Common.h"
 #include "Texture.h"
 #include "TextureAnimeComponent.h"
 #include "Music.h"
@@ -105,8 +106,8 @@ int main() {
 	}
 
 	// 画面の初期化
-	InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Catch pkmn");
-	SetTargetFPS(60);
+	InitWindow(Common::SCREEN_WIDTH, Common::SCREEN_HEIGHT, "Catch pkmn");
+	SetTargetFPS(Common::TARGET_FPS);
 	InitAudioDevice();
 
 	//ロード
@@ -175,7 +176,7 @@ int main() {
 				CheckCollisions(&ball, &pkmnManager, player);
 
 				// 🌟 プレイヤーが死んだらコンティニュー画面へ！
-				if (player->playerState == PLAYER_STATE_DEAD) {
+				if (player->IsDead()) {
 					//if (player.playerState == PLAYER_STATE_DEAD) {・・・・・・・・・・・・・・6/7
 					gameState = STATE_CONTINUE;
 				}

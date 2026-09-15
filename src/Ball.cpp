@@ -67,7 +67,7 @@ void UpdateBall(Ball* ball, GameObject* playerObject) {
             ball->chargeGaugeY = 0.0f;
 
             //プレイヤーが４ンでいるときはchargeできないようにする
-            if (player->playerState == PLAYER_STATE_DEAD) {
+            if (player->IsDead()) {
 				ball->state = BALL_WAIT_X;
 				break;
             }
