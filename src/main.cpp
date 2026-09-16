@@ -15,13 +15,7 @@
 #include "ContinueSelect.h"
 #include "Rule.h"
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
-
 void ResetGame(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, ProjectileManager* projectileManager) {
-//void ResetGame(Player* player, Ball* ball, PkmnManager* pkmnManager, ProjectileManager* projectileManager) {
-	// プレイヤーのリセット      GameObject* playerObjectを消して *player = CreatePlayer();にすると旧式・・・・・・・・・1/7
-	//player = CreatePlayer(); 
 	playerObject->position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
 	playerObject->scale = { 50.0f, 50.0f };
 	auto* player = playerObject->GetComponent<Player>();
@@ -31,7 +25,7 @@ void ResetGame(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, P
 	pAnime->SetAnimeTexture(pIdleAnime);
 
 	// ボールのリセット
-	*ball = CreateBall(); // 丸ごと初期状態で上書き
+	ball->Reset(); // 丸ごと初期状態で上書き
 
 	// 弾のリセット
 	ClearProjectileManager(projectileManager);
@@ -44,8 +38,7 @@ void ResetGame(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, P
 		pkmnManager->list[i].prevState = PKMN_STATE_THINK;
 		pkmnManager->list[i].timer = 0.0f;
 		pkmnManager->list[i].frameCounter = 0;
-		pkmnManager->list[i].position = pkmnManager->list[i].initialPos; // 初期位置に戻す
-		// 初期位置に戻したい場合は、各ポケモンの初期位置を構造体に保存しておくのがおすすめです
+		pkmnManager->list[i].position = pkmnManager->list[i].initialPos;
 	}
 }
 
@@ -56,23 +49,22 @@ void CheckCollisions(Ball* ball, PkmnManager* pkmnManager, Player* player) {		//
 	player->CheckPlayerHurt(GetMewtwoProjectileManager(), pkmnManager);
 
 	// ⚽ 2. ボールとポケモンの当たり判定
-	if (ball->state == BALL_FLYING) {
+	if (ball->GetState() == BALL_STATE::FLYING) {
 		for (int i = 0; i < pkmnManager->count; i++) {
 			Pkmn* enemy = &pkmnManager->list[i];
 
 			if (enemy->isActive && enemy->isVisible) {
 				// 円（ボール）と円（ポケモン）の衝突をチェック！
-				if (CheckCollisionCircles(ball->position, ball->radius, enemy->position, enemy->blueprint.radius)) {
+				if (CheckCollisionCircles(ball->GetPosition(), ball->GetRadius(), enemy->position, enemy->blueprint.radius)) {
 
 					// 💥 ポケモンに当たったのでボールを跳ね返らせるステートにする！
-					ball->state = BALL_BOUNCE;
+					ball->SetState(BALL_STATE::BOUNCE);
 					enemy->state = PKMN_STATE_BOUNCE; // ポケモンも跳ね返るステートにする
 					// ① 真上に向かってピョコッと跳ねる初速を与える（上はマイナス）
-					ball->speed.x = 0.0f;
-					ball->speed.y = -6.0f; // ★この数字を大きくすると高く跳ねます
+					ball->SetSpeed({ 0.0f, -6.0f }); // ★この数字を大きくすると高く跳ねます
 
 					// ② 当たった瞬間のY座標を「天井」の基準として記録しておく！　BOUNCEのほうで初期化するとずっと回るからこっち
-					ball->bounceStartY = ball->position.y;
+					ball->SetBounceStart(ball->GetPosition());
 					break;
 				}
 			}
@@ -123,7 +115,6 @@ int main() {
 	
 	InitializeStateSelect();
 	InitializeContinueSelect();
-	Ball ball = CreateBall();
 	PkmnManager pkmnManager{};
 	ProjectileManager projectileManager{};
 	BlinkingText text;
@@ -151,13 +142,13 @@ int main() {
 				UpdateBlinkingText(text);
 				if (STATE_SELECT != gameState) {
 					LoadStage(selectRect, &pkmnManager);
-					ResetGame(&playerObject, &ball, &pkmnManager, &projectileManager);
+					ResetGame(&playerObject, &player->GetBall(), &pkmnManager, &projectileManager);
 					//ResetGame(&player, &ball, &pkmnManager, &projectileManager);・・・・・・・・4/7
 				}
 				break;
 			case STATE_RULE:
 				// ルール画面の処理
-				UpdateRule(&playerObject, &ball, &pkmnManager, &gameState);
+				UpdateRule(&playerObject, &player->GetBall(), &pkmnManager, &gameState);
 				break;
 			case STATE_GAME:
 				// ゲーム画面の処理
@@ -168,12 +159,11 @@ int main() {
 				//UpdatePkmnManager(&pkmnManager, player.position);
 				playerObject.Update();
 				//UpdateBall(&ball, player);
-				UpdateBall(&ball, &playerObject);
 				UpdatePkmnManager(&pkmnManager, playerObject.position);
 				UpdateProjectileManager(GetMewtwoProjectileManager());
 
 				//CheckCollisions(&ball, &pkmnManager, &player);・・・・・・・・・・・・・・
-				CheckCollisions(&ball, &pkmnManager, player);
+				CheckCollisions(&player->GetBall(), &pkmnManager, player);
 
 				// 🌟 プレイヤーが死んだらコンティニュー画面へ！
 				if (player->IsDead()) {
@@ -213,7 +203,7 @@ int main() {
 				if (IsKeyPressed(KEY_SPACE)) {
 					// 💡 ここでプレイヤーのライフや位置、ポケモンたちをリセットする処理を呼ぶ！
 					//ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager());・・・・・・・・・・・8/7
-					ResetGame(&playerObject, &ball, &pkmnManager, GetMewtwoProjectileManager());
+					ResetGame(&playerObject, &player->GetBall(), &pkmnManager, GetMewtwoProjectileManager());
 					continueSelectRect = 0; // コンティニュー画面の選択を初期化
 				}
 				break;
@@ -224,7 +214,7 @@ int main() {
 				// 「スペースキーでタイトルに戻る」など
 				if (IsKeyPressed(KEY_SPACE)) {
 					//ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager()); ・・・・・・・・・・・・・・9/7
-					ResetGame(&playerObject, &ball, &pkmnManager, GetMewtwoProjectileManager()); 
+					ResetGame(&playerObject, &player->GetBall(), &pkmnManager, GetMewtwoProjectileManager()); 
 					gameState = STATE_TITLE;
 				}
 				break;
@@ -253,14 +243,14 @@ int main() {
 			break;
 		case STATE_RULE:
 			//DrawRule(&player,&ball,&pkmnManager);・・・・・・・・・・・・・・・・・・・・・・・10/7
-			DrawRule(&playerObject,&ball,&pkmnManager);
+			DrawRule(&playerObject,&player->GetBall(),&pkmnManager);
 			DrawBlinkingText(text, myFont, "Press B to back", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_GAME:
 			DrawTexture(bgTexture, 0, 0, WHITE);
 			DrawText("press P to pause", 10, 10, 30, WHITE);
 			
-			DrawBall(ball);
+			player->GetBall().Draw();
 
 			//DrawPlayer(player);
 			playerObject.Draw();
@@ -271,7 +261,7 @@ int main() {
 		case STATE_PAUSE:
 			DrawTexture(bgTexture, 0, 0, WHITE);
 
-			DrawBall(ball);
+			player->GetBall().Draw();
 
 			//DrawPlayer(player);
 			playerObject.Draw();
@@ -298,7 +288,7 @@ int main() {
 			//DrawPlayer(player);
 			playerObject.Draw();
 
-			DrawBall(ball);
+			player->GetBall().Draw();
 			DrawPkmnManager(pkmnManager);
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 

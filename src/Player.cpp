@@ -1,8 +1,7 @@
-#include "raylib.h"
-#include "raymath.h"
 #include "player.h"
 #include "GameObject.h"
 #include "Common.h"
+#include "TextureAnimeComponent.h"
 
 Player::Player() {
 	m_speed = { 0.0f, 0.0f };
@@ -23,12 +22,13 @@ void Player::Reset() {
 	m_invincibleFrame = 0; // 無敵時間を3秒に設定
 	m_STATE = STATE::FINE;
 	m_color = RED;
+
+	m_ball.Reset();
 }
 
 void Player::Update() {
 	switch (m_STATE) {
 		case STATE::FINE: {
-
 			// 💡 関数が終わってもクリックした位置を記憶し続ける変数
 			static Vector2 clickStartPos = { 0.0f, 0.0f };
 
@@ -50,8 +50,8 @@ void Player::Update() {
 
 				// 💡 引っ張った方向とは「逆」に飛ばしたい場合（弓矢やゴムのように）は、引き算を逆にしてください
 				// ここでは「クリックして動かした方向」にそのまま飛ぶ計算にしています
-				this->m_speed.x = (clickEndPos.x - clickStartPos.x) * moveMultiplier;
-				this->m_speed.y = (clickEndPos.y - clickStartPos.y) * moveMultiplier;
+				m_speed.x = (clickEndPos.x - clickStartPos.x) * moveMultiplier;
+				m_speed.y = (clickEndPos.y - clickStartPos.y) * moveMultiplier;
 			}
 
 			// 💡 半分のサイズ（中心からの距離）を計算
@@ -60,17 +60,19 @@ void Player::Update() {
 
 			// 次フレームの位置を予測
 			Vector2 futurePos = {
-				this->gameObject->position.x + this->m_speed.x,
-				this->gameObject->position.y + this->m_speed.y
+				gameObject->position.x + m_speed.x,
+				gameObject->position.y + m_speed.y
 			};
 
 			float minX = halfWidth;
-			float maxX = GetScreenWidth() - halfWidth;
+			float maxX = Common::SCREEN_WIDTH - halfWidth;
 			float minY = halfHeight;
-			float maxY = GetScreenHeight() - halfHeight;
+			float maxY = Common::SCREEN_HEIGHT - halfHeight;
 
 			gameObject->position.x = Common::clamp(futurePos.x, minX, maxX);
 			gameObject->position.y = Common::clamp(futurePos.y, minY, maxY);
+
+			m_ball.Update(gameObject->position);
 
 			// プレイヤーのライフが0以下になった場合、状態を死んでいる状態に変更
 			if (m_life <= 0) {
@@ -91,6 +93,21 @@ void Player::Draw() {
 		case STATE::FINE: {
 			if (!m_isInvincible){
 				//DrawRectangle(gameObject->position.x - gameObject->scale.x / 2, gameObject->position.y - gameObject->scale.y / 2, gameObject->scale.x, gameObject->scale.y, m_color);
+				auto* pAnime = gameObject->GetComponent<TextureAnimeComponent>();
+				//アニメーションの切り替え
+				const BALL_STATE ballState = m_ball.GetState();
+				switch (ballState) {
+				case BALL_STATE::WAIT_X:
+					if (pAnime->animeTexture != &pIdleAnime) {
+						pAnime->SetAnimeTexture(pIdleAnime);
+					}
+					break;
+				case BALL_STATE::FLYING:
+					if (pAnime->animeTexture != &pThrowAnime) {
+						pAnime->SetAnimeTexture(pThrowAnime);
+					}
+					break;
+				}
 			}
 			break;
 		}
@@ -154,4 +171,17 @@ bool Player::IsDead() const {
 
 bool Player::IsInvincible() const {
 	return m_isInvincible;
+}
+
+Vector2 Player::GetPosition() const {
+	if (gameObject == nullptr) return { 0.0f, 0.0f };
+	return gameObject->position;
+}
+
+Ball& Player::GetBall() {
+	return m_ball;
+}
+
+const Ball& Player::GetBall() const {
+	return m_ball;
 }

@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include "Mewtwo.h"
 #include "Pkmn.h"
+#include "Ball.h"
 
 class Player : public Component {
 public:
@@ -15,6 +16,9 @@ public:
 
 	bool IsDead() const;
 	bool IsInvincible() const;
+	Vector2 GetPosition() const;
+	Ball& GetBall();
+	const Ball& GetBall() const;
 	
 private:
 	// プレイヤーの状態を表す列挙型
@@ -28,4 +32,6 @@ private:
 	bool m_isInvincible = false;
 	int m_invincibleFrame = 0;
 	Color m_color = RED;	
+
+	Ball m_ball;
 };

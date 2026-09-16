@@ -1,292 +1,612 @@
+//#include "Ball.h"
+//#include "TextureAnimeComponent.h"
+//#include "raylib.h"
+//
+////windowは上がマイナス
+//const float UP = -1.0f;
+//// 最大チャージ時の初速（必要に応じて調整してください）
+//const float MAX_LAUNCH_SPEED = 50.0f;
+//// 飛行中の減速係数（摩擦。1.0未満で徐々に減速）
+//const float BALL_FRICTION = 0.98f;
+//
+//Ball CreateBall() {
+//	Ball ball;
+//	ball.position = {0.0f,0.0f };
+//	ball.radius = 12.0f;
+//    ball.speed = { 0.0f, 0.0f };             // 最初は止まっている
+//    ball.color = MAROON;                     // 色も固定
+//
+//    //ゲージを左においておくための変数
+//	ball.isAimingLeft = false;              //ゲージを左においておくための変数
+//	ball.isAimingDown = false;              //ゲージを下においておくための変数
+//	ball.outTimer = 0.5f;                       //画面外に出たときのタイマー
+//	ball.bounceStartY = 0.0f;                     //跳ね返ったときのY座標の基準
+//
+//    // ステートマシンの初期化
+//    ball.state = BALL_WAIT_X;
+//    ball.chargePower = { 0.0f, 0.0f };
+//    ball.chargeGaugeX = 0.0f;
+//    ball.chargeGaugeY = 0.5f;
+//	ball.isGaugeIncreasing = true;           // ゲージが増加中か減少中かのフラグ
+//
+//    return ball;
+//}
+//
+//void UpdateBall(Ball* ball, GameObject* playerObject) {
+//    auto* player = playerObject->GetComponent<Player>();
+//    auto* pAnime = playerObject->GetComponent<TextureAnimeComponent>();
+//	//アニメーションの切り替え
+//    switch (ball->state) {
+//        case BALL_WAIT_X:
+//            if (pAnime->animeTexture != &pIdleAnime) {
+//                pAnime->SetAnimeTexture(pIdleAnime);
+//            }
+//            break;
+//		case BALL_FLYING:
+//            if (pAnime->animeTexture != &pThrowAnime) {
+//                pAnime->SetAnimeTexture(pThrowAnime);
+//            }
+//			break;
+//    }
+//
+//    //消える処理で使う
+//    int screenWidth = GetScreenWidth();
+//    int screenHeight = GetScreenHeight();
+//
+//    //ゲージが往復して増減するスピード
+//    float gaugeSpeed = 2.0f * GetFrameTime(); //約0.5秒でMAXになる速度
+//
+//	//ステートマシンの処理
+//    switch (ball->state) {
+//        case BALL_WAIT_X:
+//            // 待機状態ではボールを手元に固定して各種パワーをリセット
+//            ball->position = playerObject->position;
+//            ball->speed = { 0.0f, 0.0f };
+//            ball->chargePower = { 0.0f, 0.0f };
+//            ball->chargeGaugeX = 0.0f;
+//            ball->chargeGaugeY = 0.0f;
+//
+//            //プレイヤーが４ンでいるときはchargeできないようにする
+//            if (player->IsDead()) {
+//				ball->state = BALL_WAIT_X;
+//				break;
+//            }
+//
+//            // AかDが押されたら横チャージ状態へ移行
+//            if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D)) {
+//                ball->state = BALL_CHARGE_X;
+//                ball->isGaugeIncreasing = true;
+//                ball->isAimingLeft = IsKeyDown(KEY_A) ? true : false;
+//            }
+//            break;
+//
+//        case BALL_CHARGE_X:
+//            ball->position = playerObject->position;
+//            //横ゲージの増減処理
+//            if (ball->isGaugeIncreasing) {
+//                ball->chargeGaugeX += gaugeSpeed;
+//                if (ball->chargeGaugeX >= 1.0f) {
+//                    ball->chargeGaugeX = 1.0f;
+//                    ball->isGaugeIncreasing = false;
+//                }
+//            } else {
+//                ball->chargeGaugeX -= gaugeSpeed;
+//                if (ball->chargeGaugeX <= 0.0f) {
+//                    ball->chargeGaugeX = 0.0f;
+//                    ball->isGaugeIncreasing = true;
+//                }
+//            }
+//
+//            //キーが離されたら確定させる
+//			if (IsKeyReleased(KEY_A) || IsKeyReleased(KEY_D)) {
+//				float directionX = ball->isAimingLeft ? -1.0f : 1.0f; // Aキーなら左(-1)、Dキーなら右(+1)
+//                ball->chargePower.x = ball->chargeGaugeX * MAX_LAUNCH_SPEED * directionX;
+//				ball->state = BALL_WAIT_Y;
+//			}
+//            break;
+//
+//        case BALL_WAIT_Y:
+//			ball->position = playerObject->position;    //手元に戻す
+//            // Bキーが押されたら、横の受付（最初の状態）に巻き戻す
+//            if (IsKeyPressed(KEY_B)) {
+//                ball->state = BALL_WAIT_X;
+//            }
+//            // WかSが押されたら縦チャージ開始
+//            else if (IsKeyDown(KEY_W) || IsKeyDown(KEY_S)) {
+//                ball->state = BALL_CHARGE_Y;
+//                ball->isGaugeIncreasing = true;
+//                ball->isAimingDown = IsKeyDown(KEY_S) ? true : false;
+//            }
+//            break;
+//
+//        case BALL_CHARGE_Y:
+//            ball->position = playerObject->position;    //手元に戻す
+//            // Bキーが押されたら、縦のチャージを中断して縦の入力待ちへ巻き戻す
+//            if (IsKeyPressed(KEY_B)) {
+//                ball->chargeGaugeY = 0.0f;
+//                ball->state = BALL_WAIT_Y;
+//                break;
+//            }
+//
+//            // 縦ゲージの増減（0.0～1.0を往復）
+//            if (ball->isGaugeIncreasing) {
+//                ball->chargeGaugeY += gaugeSpeed;
+//                if (ball->chargeGaugeY >= 1.0f) {
+//                    ball->chargeGaugeY = 1.0f;
+//                    ball->isGaugeIncreasing = false;
+//                }
+//            }
+//            else {
+//                ball->chargeGaugeY -= gaugeSpeed;
+//                if (ball->chargeGaugeY <= 0.0f) {
+//                    ball->chargeGaugeY = 0.0f;
+//                    ball->isGaugeIncreasing = true;
+//                }
+//            }
+//
+//			//キーが離されたら確定させる
+//			if (IsKeyReleased(KEY_W) || IsKeyReleased(KEY_S)) {
+//				float directionY = ball->isAimingDown ? 1.0f : -1.0f; // Sキーなら下(+1)、Wキーなら上(-1)
+//				ball->chargePower.y = ball->chargeGaugeY * MAX_LAUNCH_SPEED * directionY;
+//				ball->state = BALL_AIMING;
+//			}
+//            break;
+//
+//		case BALL_AIMING:
+//            ball->position = playerObject->position;    //手元に戻す
+//            // Bキーが押されたら、縦のパワーをクリアして縦の入力待ちに戻る
+//            if (IsKeyPressed(KEY_B)) {
+//                ball->chargePower.y = 0.0f;
+//                ball->chargeGaugeY = 0.0f;
+//                ball->state = BALL_WAIT_Y;
+//            }
+//            // スペースキーが押されたら、力を速度にコピーしてついに発射！
+//            else if (IsKeyPressed(KEY_SPACE)) {
+//                ball->speed = ball->chargePower;
+//                ball->state = BALL_FLYING;
+//            }
+//            break;
+//
+//        case BALL_FLYING:
+//		{       //変数float speedSquaredをこのcase内で使うために{}で囲む
+//            // 速度を座標に足して移動させる
+//            ball->position.x += ball->speed.x;
+//            ball->position.y += ball->speed.y;
+//
+//            // 毎フレーム、摩擦を掛け算して徐々に減速させる
+//            ball->speed.x *= BALL_FRICTION;
+//            ball->speed.y *= BALL_FRICTION;
+//
+//            // 速度がほぼゼロになったら自動的に待機状態（手元）に戻る
+//
+//            // 速度ベクトルの「二乗の長さ」（Xの二乗 + Yの二乗）を出す
+//            float speedSquared = (ball->speed.x * ball->speed.x) + (ball->speed.y * ball->speed.y);
+//
+//            // 速度がなくなってきたら（2.5の二乗である 6.25f 未満）手元に戻す
+//            if (IsKeyPressed(KEY_SPACE) || speedSquared < 6.25f) {
+//                ball->state = BALL_WAIT_X;
+//            }
+//            else if (ball->position.x < -ball->radius || ball->position.x > screenWidth + ball->radius ||
+//                ball->position.y < -ball->radius || ball->position.y > screenHeight + ball->radius) {
+//
+//                ball->outTimer = 0.0f; // 画面外に出た瞬間にタイマーをリセット
+//                ball->state = BALL_OUT;
+//            }
+//            break;
+//        }       //小部屋終わり
+//
+//		case BALL_BOUNCE:
+//            // ① 【重力】上に向かっている速度に、毎フレーム下向きの力を足す
+//            // 60FPSなら、毎フレーム 0.3f ずつ速度が下向き（プラス）に引っ張られます
+//            ball->speed.y += 0.3f;
+//
+//            // ② 実際にボールを移動させる
+//            ball->position.x += ball->speed.x;
+//            ball->position.y += ball->speed.y;
+//
+//            // ③ 【着地チェック】ボールが落ちてきて、当たった時の高さ（基準）を超えたら終了！
+//            // ※「速度が下向き（> 0）」かつ「元の高さより下（>=）」になったら確実に着地したと判定できます
+//            if (ball->speed.y > 0.0f && ball->position.y >= ball->bounceStartY) {
+//                ball->state = BALL_WAIT_X; // 手元（待機状態）に戻る
+//            }
+//            break;
+//
+//		case BALL_OUT:
+//			// 画面外に出たら、一定時間経過後に手元に戻す
+//			ball->outTimer -= GetFrameTime();
+//			if (ball->outTimer <= 0.0f) { // 0.5秒経過したら手元に戻す
+//				ball->state = BALL_WAIT_X;
+//			}
+//            break;
+//    }
+//}
+//
+//void DrawBall(Ball ball) {
+//    int screenWidth = GetScreenWidth();
+//    int screenHeight = GetScreenHeight();
+//    float gaugeMax = 200.0f; // ゲージの最大値
+//	float gaugeThickness = 20.0f; // ゲージの厚み
+//    
+//    // WAIT以外でボール本体を描画
+//    if (ball.state != BALL_WAIT_X && ball.state != BALL_WAIT_Y && ball.state != BALL_OUT) {
+//        DrawCircleV(ball.position, ball.radius, ball.color);
+//    }
+//
+//    if (ball.state == BALL_BOUNCE) {
+//		DrawCircleV(ball.position, ball.radius, BLACK);
+//    }
+//
+//    if (ball.state == BALL_WAIT_X) {
+//        //DrawText("PRESS [A/D] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+//    }
+//    if (ball.state == BALL_WAIT_Y) {
+//        //DrawText("PRESS [W/S] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+//    }
+//
+//    // 2. 状態に応じたチャージゲージUIの描画
+//    // 横チャージ中、またはそれ以降の状態なら画面下に横ゲージを表示
+//    if (ball.state >= BALL_CHARGE_X && ball.state <= BALL_AIMING) {
+//        int gaugeW = (int)(gaugeMax * ball.chargeGaugeX);
+//
+//		//ゲージの描画位置を計算
+//		float bgY = ball.position.y - gaugeThickness / 2;
+//		float rectY = bgY;
+//        float bgX = 0;
+//        float rectX = 0;
+//
+//        if (ball.isAimingLeft) {
+//            bgX = ball.position.x - ball.radius - 15 - gaugeMax;
+//            // ゲージは右から左に伸びるように見せるため、右端からゲージ幅を引く
+//            rectX = (ball.position.x - ball.radius - 15) - gaugeW;
+//		}
+//		else {
+//			bgX = ball.position.x + ball.radius + 15;
+//			rectX = bgX;
+//		}
+//
+//        DrawRectangle(bgX, bgY, gaugeMax, gaugeThickness, LIGHTGRAY);
+//        DrawRectangle(rectX, rectY, gaugeW, gaugeThickness, ORANGE);
+//    }
+//
+//    // 縦チャージ中、またはそれ以降の状態なら画面左に縦ゲージを表示
+//    if (ball.state >= BALL_CHARGE_Y && ball.state <= BALL_AIMING) {
+//        int gaugeH = (int)(gaugeMax * ball.chargeGaugeY);
+//
+//		// ゲージの描画位置を計算
+//		float bgX = ball.position.x - gaugeThickness / 2;
+//		float rectX = bgX;
+//		float bgY = 0;
+//		float rectY = 0;
+//
+//		if (ball.isAimingDown) {
+//			bgY = ball.position.y + ball.radius + 15;
+//			rectY = bgY;
+//		}
+//		else {
+//			bgY = ball.position.y - ball.radius - 15 - gaugeMax;
+//			// ゲージは下から上に伸びるように見せるため、下端からゲージ高さを引く
+//			rectY = (ball.position.y - ball.radius - 15) - gaugeH;
+//		}
+//
+//        DrawRectangle(bgX, bgY, gaugeThickness, gaugeMax, LIGHTGRAY);
+//        // 下から上に向かって伸びるように座標を計算
+//        DrawRectangle(rectX, rectY, gaugeThickness, gaugeH, LIME);
+//    }
+//
+//    // 3. 発射予測線の破線描画
+//    if (ball.state == BALL_AIMING) {
+//        Vector2 simPos = ball.position;
+//        Vector2 simSpeed = ball.chargePower;
+//
+//        // 30フレーム先までの軌道をシミュレーションして点で描く
+//        for (int i = 0; i < 30; i++) {
+//            simSpeed.x *= BALL_FRICTION;
+//            simSpeed.y *= BALL_FRICTION;
+//            simPos.x += simSpeed.x;
+//            simPos.y += simSpeed.y;
+//
+//            if (i % 3 == 0) { // 3フレームに1回だけ描画して綺麗な破線にする
+//                DrawCircleV(simPos, 3, MAROON);
+//            }
+//        }
+//        //DrawText("PRESS [SPACE] TO LAUNCH / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+//    }
+//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #include "Ball.h"
-#include "TextureAnimeComponent.h"
 #include "raylib.h"
+#include "Common.h"
 
-//windowは上がマイナス
-const float UP = -1.0f;
-// 最大チャージ時の初速（必要に応じて調整してください）
-const float MAX_LAUNCH_SPEED = 50.0f;
-// 飛行中の減速係数（摩擦。1.0未満で徐々に減速）
-const float BALL_FRICTION = 0.98f;
-
-Ball CreateBall() {
-	Ball ball;
-	ball.position = {0.0f,0.0f };
-	ball.radius = 12.0f;
-    ball.speed = { 0.0f, 0.0f };             // 最初は止まっている
-    ball.color = MAROON;                     // 色も固定
-
-    //ゲージを左においておくための変数
-	ball.isAimingLeft = false;              //ゲージを左においておくための変数
-	ball.isAimingDown = false;              //ゲージを下においておくための変数
-	ball.outTimer = 0.5f;                       //画面外に出たときのタイマー
-	ball.bounceStartY = 0.0f;                     //跳ね返ったときのY座標の基準
-
-    // ステートマシンの初期化
-    ball.state = BALL_WAIT_X;
-    ball.chargePower = { 0.0f, 0.0f };
-    ball.chargeGaugeX = 0.0f;
-    ball.chargeGaugeY = 0.5f;
-	ball.isGaugeIncreasing = true;           // ゲージが増加中か減少中かのフラグ
-
-    return ball;
+namespace {
+	//windowは上がマイナス
+	const float UP = -1.0f;
+	// 最大チャージ時の初速（必要に応じて調整してください）
+	const float MAX_LAUNCH_SPEED = 50.0f;
+	// 飛行中の減速係数（摩擦。1.0未満で徐々に減速）
+	const float BALL_FRICTION = 0.98f;
 }
 
-void UpdateBall(Ball* ball, GameObject* playerObject) {
-    auto* player = playerObject->GetComponent<Player>();
-    auto* pAnime = playerObject->GetComponent<TextureAnimeComponent>();
-	//アニメーションの切り替え
-    switch (ball->state) {
-        case BALL_WAIT_X:
-            if (pAnime->animeTexture != &pIdleAnime) {
-                pAnime->SetAnimeTexture(pIdleAnime);
-            }
-            break;
-		case BALL_FLYING:
-            if (pAnime->animeTexture != &pThrowAnime) {
-                pAnime->SetAnimeTexture(pThrowAnime);
-            }
-			break;
-    }
+Ball::Ball() {
+    m_position = { 0.0f,0.0f };
+    m_radius = 12.0f;
+    m_speed = { 0.0f, 0.0f };             // 最初は止まっている
+    m_color = MAROON;                     // 色も固定
 
-    //消える処理で使う
-    int screenWidth = GetScreenWidth();
-    int screenHeight = GetScreenHeight();
+    //ゲージを左においておくための変数
+    m_isAimingLeft = false;              //ゲージを左においておくための変数
+    m_isAimingDown = false;              //ゲージを下においておくための変数
+    m_outTimer = 0.5f;                       //画面外に出たときのタイマー
+    m_bounceStart = { 0.0f, 0.0f };                     //跳ね返ったときのY座標の基準
 
+    // ステートマシンの初期化
+    m_state = BALL_STATE::WAIT_X;
+    m_chargePower = { 0.0f, 0.0f };
+    m_chargeGaugeX = 0.0f;
+    m_chargeGaugeY = 0.5f;
+    m_isGaugeIncreasing = true;           // ゲージが増加中か減少中かのフラグ
+}
+
+void Ball::Reset() {
+	m_position = { 0.0f, 0.0f };
+	m_speed = { 0.0f, 0.0f };
+    m_isAimingLeft = false;              
+    m_isAimingDown = false;              
+    m_outTimer = 0.5f;                       
+    m_bounceStart = { 0.0f, 0.0f };                     
+	m_chargePower = { 0.0f, 0.0f };
+	m_chargeGaugeX = 0.0f;
+	m_chargeGaugeY = 0.5f;
+	m_isGaugeIncreasing = true;
+	m_state = BALL_STATE::WAIT_X;
+}
+
+void Ball::Update(Vector2 playerPosition) {
     //ゲージが往復して増減するスピード
     float gaugeSpeed = 2.0f * GetFrameTime(); //約0.5秒でMAXになる速度
 
-	//ステートマシンの処理
-    switch (ball->state) {
-        case BALL_WAIT_X:
-            // 待機状態ではボールを手元に固定して各種パワーをリセット
-            ball->position = playerObject->position;
-            ball->speed = { 0.0f, 0.0f };
-            ball->chargePower = { 0.0f, 0.0f };
-            ball->chargeGaugeX = 0.0f;
-            ball->chargeGaugeY = 0.0f;
+    //ステートマシンの処理
+    switch (m_state) {
+    case BALL_STATE::WAIT_X:
+        // 待機状態ではボールを手元に固定して各種パワーをリセット
+        m_position = playerPosition;
+        m_speed = { 0.0f, 0.0f };
+        m_chargePower = { 0.0f, 0.0f };
+        m_chargeGaugeX = 0.0f;
+        m_chargeGaugeY = 0.0f;
 
-            //プレイヤーが４ンでいるときはchargeできないようにする
-            if (player->IsDead()) {
-				ball->state = BALL_WAIT_X;
-				break;
-            }
+        // AかDが押されたら横チャージ状態へ移行
+        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D)) {
+            m_state = BALL_STATE::CHARGE_X;
+            m_isGaugeIncreasing = true;
+            m_isAimingLeft = IsKeyDown(KEY_A) ? true : false;
+        }
+        break;
 
-            // AかDが押されたら横チャージ状態へ移行
-            if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D)) {
-                ball->state = BALL_CHARGE_X;
-                ball->isGaugeIncreasing = true;
-                ball->isAimingLeft = IsKeyDown(KEY_A) ? true : false;
+    case BALL_STATE::CHARGE_X:
+        m_position = playerPosition;
+        //横ゲージの増減処理
+        if (m_isGaugeIncreasing) {
+            m_chargeGaugeX += gaugeSpeed;
+            if (m_chargeGaugeX >= 1.0f) {
+                m_chargeGaugeX = 1.0f;
+                m_isGaugeIncreasing = false;
             }
+        }
+        else {
+            m_chargeGaugeX -= gaugeSpeed;
+            if (m_chargeGaugeX <= 0.0f) {
+                m_chargeGaugeX = 0.0f;
+                m_isGaugeIncreasing = true;
+            }
+        }
+
+        //キーが離されたら確定させる
+        if (IsKeyReleased(KEY_A) || IsKeyReleased(KEY_D)) {
+            float directionX = m_isAimingLeft ? -1.0f : 1.0f; // Aキーなら左(-1)、Dキーなら右(+1)
+            m_chargePower.x = m_chargeGaugeX * MAX_LAUNCH_SPEED * directionX;
+            m_state = BALL_STATE::WAIT_Y;
+        }
+        break;
+
+    case BALL_STATE::WAIT_Y:
+        m_position = playerPosition;    //手元に戻す
+        // Bキーが押されたら、横の受付（最初の状態）に巻き戻す
+        if (IsKeyPressed(KEY_B)) {
+            m_state = BALL_STATE::WAIT_X;
+        }
+        // WかSが押されたら縦チャージ開始
+        else if (IsKeyDown(KEY_W) || IsKeyDown(KEY_S)) {
+            m_state = BALL_STATE::CHARGE_Y;
+            m_isGaugeIncreasing = true;
+            m_isAimingDown = IsKeyDown(KEY_S) ? true : false;
+        }
+        break;
+
+    case BALL_STATE::CHARGE_Y:
+        m_position = playerPosition;    //手元に戻す
+        // Bキーが押されたら、縦のチャージを中断して縦の入力待ちへ巻き戻す
+        if (IsKeyPressed(KEY_B)) {
+            m_chargeGaugeY = 0.0f;
+            m_state = BALL_STATE::WAIT_Y;
             break;
+        }
 
-        case BALL_CHARGE_X:
-            ball->position = playerObject->position;
-            //横ゲージの増減処理
-            if (ball->isGaugeIncreasing) {
-                ball->chargeGaugeX += gaugeSpeed;
-                if (ball->chargeGaugeX >= 1.0f) {
-                    ball->chargeGaugeX = 1.0f;
-                    ball->isGaugeIncreasing = false;
-                }
-            } else {
-                ball->chargeGaugeX -= gaugeSpeed;
-                if (ball->chargeGaugeX <= 0.0f) {
-                    ball->chargeGaugeX = 0.0f;
-                    ball->isGaugeIncreasing = true;
-                }
+        // 縦ゲージの増減（0.0～1.0を往復）
+        if (m_isGaugeIncreasing) {
+            m_chargeGaugeY += gaugeSpeed;
+            if (m_chargeGaugeY >= 1.0f) {
+                m_chargeGaugeY = 1.0f;
+                m_isGaugeIncreasing = false;
             }
-
-            //キーが離されたら確定させる
-			if (IsKeyReleased(KEY_A) || IsKeyReleased(KEY_D)) {
-				float directionX = ball->isAimingLeft ? -1.0f : 1.0f; // Aキーなら左(-1)、Dキーなら右(+1)
-                ball->chargePower.x = ball->chargeGaugeX * MAX_LAUNCH_SPEED * directionX;
-				ball->state = BALL_WAIT_Y;
-			}
-            break;
-
-        case BALL_WAIT_Y:
-			ball->position = playerObject->position;    //手元に戻す
-            // Bキーが押されたら、横の受付（最初の状態）に巻き戻す
-            if (IsKeyPressed(KEY_B)) {
-                ball->state = BALL_WAIT_X;
+        }
+        else {
+            m_chargeGaugeY -= gaugeSpeed;
+            if (m_chargeGaugeY <= 0.0f) {
+                m_chargeGaugeY = 0.0f;
+                m_isGaugeIncreasing = true;
             }
-            // WかSが押されたら縦チャージ開始
-            else if (IsKeyDown(KEY_W) || IsKeyDown(KEY_S)) {
-                ball->state = BALL_CHARGE_Y;
-                ball->isGaugeIncreasing = true;
-                ball->isAimingDown = IsKeyDown(KEY_S) ? true : false;
-            }
-            break;
+        }
 
-        case BALL_CHARGE_Y:
-            ball->position = playerObject->position;    //手元に戻す
-            // Bキーが押されたら、縦のチャージを中断して縦の入力待ちへ巻き戻す
-            if (IsKeyPressed(KEY_B)) {
-                ball->chargeGaugeY = 0.0f;
-                ball->state = BALL_WAIT_Y;
-                break;
-            }
+        //キーが離されたら確定させる
+        if (IsKeyReleased(KEY_W) || IsKeyReleased(KEY_S)) {
+            float directionY = m_isAimingDown ? 1.0f : -1.0f; // Sキーなら下(+1)、Wキーなら上(-1)
+            m_chargePower.y = m_chargeGaugeY * MAX_LAUNCH_SPEED * directionY;
+            m_state = BALL_STATE::AIMING;
+        }
+        break;
 
-            // 縦ゲージの増減（0.0～1.0を往復）
-            if (ball->isGaugeIncreasing) {
-                ball->chargeGaugeY += gaugeSpeed;
-                if (ball->chargeGaugeY >= 1.0f) {
-                    ball->chargeGaugeY = 1.0f;
-                    ball->isGaugeIncreasing = false;
-                }
-            }
-            else {
-                ball->chargeGaugeY -= gaugeSpeed;
-                if (ball->chargeGaugeY <= 0.0f) {
-                    ball->chargeGaugeY = 0.0f;
-                    ball->isGaugeIncreasing = true;
-                }
-            }
+    case BALL_STATE::AIMING:
+        m_position = playerPosition;    //手元に戻す
+        // Bキーが押されたら、縦のパワーをクリアして縦の入力待ちに戻る
+        if (IsKeyPressed(KEY_B)) {
+            m_chargePower.y = 0.0f;
+            m_chargeGaugeY = 0.0f;
+            m_state = BALL_STATE::WAIT_Y;
+        }
+        // スペースキーが押されたら、力を速度にコピーしてついに発射！
+        else if (IsKeyPressed(KEY_SPACE)) {
+            m_speed = m_chargePower;
+            m_state = BALL_STATE::FLYING;
+        }
+        break;
 
-			//キーが離されたら確定させる
-			if (IsKeyReleased(KEY_W) || IsKeyReleased(KEY_S)) {
-				float directionY = ball->isAimingDown ? 1.0f : -1.0f; // Sキーなら下(+1)、Wキーなら上(-1)
-				ball->chargePower.y = ball->chargeGaugeY * MAX_LAUNCH_SPEED * directionY;
-				ball->state = BALL_AIMING;
-			}
-            break;
+    case BALL_STATE::FLYING:
+    {       //変数float speedSquaredをこのcase内で使うために{}で囲む
+        // 速度を座標に足して移動させる
+        m_position.x += m_speed.x;
+        m_position.y += m_speed.y;
 
-		case BALL_AIMING:
-            ball->position = playerObject->position;    //手元に戻す
-            // Bキーが押されたら、縦のパワーをクリアして縦の入力待ちに戻る
-            if (IsKeyPressed(KEY_B)) {
-                ball->chargePower.y = 0.0f;
-                ball->chargeGaugeY = 0.0f;
-                ball->state = BALL_WAIT_Y;
-            }
-            // スペースキーが押されたら、力を速度にコピーしてついに発射！
-            else if (IsKeyPressed(KEY_SPACE)) {
-                ball->speed = ball->chargePower;
-                ball->state = BALL_FLYING;
-            }
-            break;
+        // 毎フレーム、摩擦を掛け算して徐々に減速させる
+        m_speed.x *= BALL_FRICTION;
+        m_speed.y *= BALL_FRICTION;
 
-        case BALL_FLYING:
-		{       //変数float speedSquaredをこのcase内で使うために{}で囲む
-            // 速度を座標に足して移動させる
-            ball->position.x += ball->speed.x;
-            ball->position.y += ball->speed.y;
+        // 速度がほぼゼロになったら自動的に待機状態（手元）に戻る
 
-            // 毎フレーム、摩擦を掛け算して徐々に減速させる
-            ball->speed.x *= BALL_FRICTION;
-            ball->speed.y *= BALL_FRICTION;
+        // 速度ベクトルの「二乗の長さ」（Xの二乗 + Yの二乗）を出す
+        float speedSquared = (m_speed.x * m_speed.x) + (m_speed.y * m_speed.y);
 
-            // 速度がほぼゼロになったら自動的に待機状態（手元）に戻る
+        // 速度がなくなってきたら（2.5の二乗である 6.25f 未満）手元に戻す
+        if (IsKeyPressed(KEY_SPACE) || speedSquared < 6.25f) {
+            m_state = BALL_STATE::WAIT_X;
+        }
+        else if (m_position.x < -m_radius || m_position.x > Common::SCREEN_WIDTH + m_radius ||
+            m_position.y < -m_radius || m_position.y > Common::SCREEN_HEIGHT + m_radius) {
 
-            // 速度ベクトルの「二乗の長さ」（Xの二乗 + Yの二乗）を出す
-            float speedSquared = (ball->speed.x * ball->speed.x) + (ball->speed.y * ball->speed.y);
+            m_outTimer = 0.0f; // 画面外に出た瞬間にタイマーをリセット
+            m_state = BALL_STATE::OUT;
+        }
+        break;
+    }       //小部屋終わり
 
-            // 速度がなくなってきたら（2.5の二乗である 6.25f 未満）手元に戻す
-            if (IsKeyPressed(KEY_SPACE) || speedSquared < 6.25f) {
-                ball->state = BALL_WAIT_X;
-            }
-            else if (ball->position.x < -ball->radius || ball->position.x > screenWidth + ball->radius ||
-                ball->position.y < -ball->radius || ball->position.y > screenHeight + ball->radius) {
+    case BALL_STATE::BOUNCE:
+        // ① 【重力】上に向かっている速度に、毎フレーム下向きの力を足す
+        // 60FPSなら、毎フレーム 0.3f ずつ速度が下向き（プラス）に引っ張られます
+        m_speed.y += 0.3f;
 
-                ball->outTimer = 0.0f; // 画面外に出た瞬間にタイマーをリセット
-                ball->state = BALL_OUT;
-            }
-            break;
-        }       //小部屋終わり
+        // ② 実際にボールを移動させる
+        m_position.x += m_speed.x;
+        m_position.y += m_speed.y;
 
-		case BALL_BOUNCE:
-            // ① 【重力】上に向かっている速度に、毎フレーム下向きの力を足す
-            // 60FPSなら、毎フレーム 0.3f ずつ速度が下向き（プラス）に引っ張られます
-            ball->speed.y += 0.3f;
+        // ③ 【着地チェック】ボールが落ちてきて、当たった時の高さ（基準）を超えたら終了！
+        // ※「速度が下向き（> 0）」かつ「元の高さより下（>=）」になったら確実に着地したと判定できます
+        if (m_speed.y > 0.0f && m_position.y >= m_bounceStart.y) {
+            m_state = BALL_STATE::WAIT_X; // 手元（待機状態）に戻る
+        }
+        break;
 
-            // ② 実際にボールを移動させる
-            ball->position.x += ball->speed.x;
-            ball->position.y += ball->speed.y;
-
-            // ③ 【着地チェック】ボールが落ちてきて、当たった時の高さ（基準）を超えたら終了！
-            // ※「速度が下向き（> 0）」かつ「元の高さより下（>=）」になったら確実に着地したと判定できます
-            if (ball->speed.y > 0.0f && ball->position.y >= ball->bounceStartY) {
-                ball->state = BALL_WAIT_X; // 手元（待機状態）に戻る
-            }
-            break;
-
-		case BALL_OUT:
-			// 画面外に出たら、一定時間経過後に手元に戻す
-			ball->outTimer -= GetFrameTime();
-			if (ball->outTimer <= 0.0f) { // 0.5秒経過したら手元に戻す
-				ball->state = BALL_WAIT_X;
-			}
-            break;
+    case BALL_STATE::OUT:
+        // 画面外に出たら、一定時間経過後に手元に戻す
+        m_outTimer -= GetFrameTime();
+        if (m_outTimer <= 0.0f) { // 0.5秒経過したら手元に戻す
+            m_state = BALL_STATE::WAIT_X;
+        }
+        break;
     }
 }
 
-void DrawBall(Ball ball) {
+void Ball::Draw() const{
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
     float gaugeMax = 200.0f; // ゲージの最大値
-	float gaugeThickness = 20.0f; // ゲージの厚み
-    
+    float gaugeThickness = 20.0f; // ゲージの厚み
+
     // WAIT以外でボール本体を描画
-    if (ball.state != BALL_WAIT_X && ball.state != BALL_WAIT_Y && ball.state != BALL_OUT) {
-        DrawCircleV(ball.position, ball.radius, ball.color);
+    if (m_state != BALL_STATE::WAIT_X && m_state != BALL_STATE::WAIT_Y && m_state != BALL_STATE::OUT) {
+        DrawCircleV(m_position, m_radius, m_color);
     }
 
-    if (ball.state == BALL_BOUNCE) {
-		DrawCircleV(ball.position, ball.radius, BLACK);
-    }
-
-    if (ball.state == BALL_WAIT_X) {
-        //DrawText("PRESS [A/D] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
-    }
-    if (ball.state == BALL_WAIT_Y) {
-        //DrawText("PRESS [W/S] TO CHARGE / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
+    if (m_state == BALL_STATE::BOUNCE) {
+        DrawCircleV(m_position, m_radius, BLACK);
     }
 
     // 2. 状態に応じたチャージゲージUIの描画
     // 横チャージ中、またはそれ以降の状態なら画面下に横ゲージを表示
-    if (ball.state >= BALL_CHARGE_X && ball.state <= BALL_AIMING) {
-        int gaugeW = (int)(gaugeMax * ball.chargeGaugeX);
+    if (m_state >= BALL_STATE::CHARGE_X && m_state <= BALL_STATE::AIMING) {
+        int gaugeW = (int)(gaugeMax * m_chargeGaugeX);
 
-		//ゲージの描画位置を計算
-		float bgY = ball.position.y - gaugeThickness / 2;
-		float rectY = bgY;
+        //ゲージの描画位置を計算
+        float bgY = m_position.y - gaugeThickness / 2;
+        float rectY = bgY;
         float bgX = 0;
         float rectX = 0;
 
-        if (ball.isAimingLeft) {
-            bgX = ball.position.x - ball.radius - 15 - gaugeMax;
+        if (m_isAimingLeft) {
+            bgX = m_position.x - m_radius - 15 - gaugeMax;
             // ゲージは右から左に伸びるように見せるため、右端からゲージ幅を引く
-            rectX = (ball.position.x - ball.radius - 15) - gaugeW;
-		}
-		else {
-			bgX = ball.position.x + ball.radius + 15;
-			rectX = bgX;
-		}
+            rectX = (m_position.x - m_radius - 15) - gaugeW;
+        }
+        else {
+            bgX = m_position.x + m_radius + 15;
+            rectX = bgX;
+        }
 
         DrawRectangle(bgX, bgY, gaugeMax, gaugeThickness, LIGHTGRAY);
         DrawRectangle(rectX, rectY, gaugeW, gaugeThickness, ORANGE);
     }
 
     // 縦チャージ中、またはそれ以降の状態なら画面左に縦ゲージを表示
-    if (ball.state >= BALL_CHARGE_Y && ball.state <= BALL_AIMING) {
-        int gaugeH = (int)(gaugeMax * ball.chargeGaugeY);
+    if (m_state >= BALL_STATE::CHARGE_Y && m_state <= BALL_STATE::AIMING) {
+        int gaugeH = (int)(gaugeMax * m_chargeGaugeY);
 
-		// ゲージの描画位置を計算
-		float bgX = ball.position.x - gaugeThickness / 2;
-		float rectX = bgX;
-		float bgY = 0;
-		float rectY = 0;
+        // ゲージの描画位置を計算
+        float bgX = m_position.x - gaugeThickness / 2;
+        float rectX = bgX;
+        float bgY = 0;
+        float rectY = 0;
 
-		if (ball.isAimingDown) {
-			bgY = ball.position.y + ball.radius + 15;
-			rectY = bgY;
-		}
-		else {
-			bgY = ball.position.y - ball.radius - 15 - gaugeMax;
-			// ゲージは下から上に伸びるように見せるため、下端からゲージ高さを引く
-			rectY = (ball.position.y - ball.radius - 15) - gaugeH;
-		}
+        if (m_isAimingDown) {
+            bgY = m_position.y + m_radius + 15;
+            rectY = bgY;
+        }
+        else {
+            bgY = m_position.y - m_radius - 15 - gaugeMax;
+            // ゲージは下から上に伸びるように見せるため、下端からゲージ高さを引く
+            rectY = (m_position.y - m_radius - 15) - gaugeH;
+        }
 
         DrawRectangle(bgX, bgY, gaugeThickness, gaugeMax, LIGHTGRAY);
         // 下から上に向かって伸びるように座標を計算
@@ -294,9 +614,9 @@ void DrawBall(Ball ball) {
     }
 
     // 3. 発射予測線の破線描画
-    if (ball.state == BALL_AIMING) {
-        Vector2 simPos = ball.position;
-        Vector2 simSpeed = ball.chargePower;
+    if (m_state == BALL_STATE::AIMING) {
+        Vector2 simPos = m_position;
+        Vector2 simSpeed = m_chargePower;
 
         // 30フレーム先までの軌道をシミュレーションして点で描く
         for (int i = 0; i < 30; i++) {
@@ -311,4 +631,28 @@ void DrawBall(Ball ball) {
         }
         //DrawText("PRESS [SPACE] TO LAUNCH / [B] TO CANCEL", 50, screenHeight - 30, 20, MAROON);
     }
+}
+
+BALL_STATE Ball::GetState() const {
+	return m_state;
+}
+
+void Ball::SetState(BALL_STATE state) {
+	m_state = state;
+}
+
+Vector2 Ball::GetPosition() const {
+	return m_position;
+}
+
+float Ball::GetRadius() const {
+	return m_radius;
+}
+
+void Ball::SetSpeed(Vector2 speed) {
+	m_speed = speed;
+}
+
+void Ball::SetBounceStart(Vector2 playerPosition) {
+	m_bounceStart = playerPosition;
 }

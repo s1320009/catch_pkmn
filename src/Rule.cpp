@@ -156,8 +156,7 @@ void InitializeRule(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManag
 	auto* player = playerObject->GetComponent<Player>();
 	if (player == nullptr) return;
 	player->Reset();
-	
-	*ball = CreateBall();
+
 	LoadStage(0, pkmnManager);
 
 	ruleStep = 0;
@@ -206,10 +205,9 @@ void UpdateRule(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, 
 	case 2:
 		// 球の打ち方
 		playerObject->Update();
-		UpdateBall(ball, playerObject);
 
 		// 1回でも発射したら次へ
-		if (ball->state == BALL_FLYING) {
+		if (ball->GetState() == BALL_STATE::FLYING) {
 			ruleStep = 3;
 		}
 
@@ -221,15 +219,13 @@ void UpdateRule(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, 
 
 	case 3:
 		playerObject->Update();
-		UpdateBall(ball, playerObject);
 		UpdatePkmnManager(pkmnManager, playerObject->position);
 
 		// 当たったら次へ
-		if (CheckCollisionCircles(ball->position, ball->radius, pkmnManager->list[0].position, pkmnManager->list[0].blueprint.radius)) {
-			ball->state = BALL_BOUNCE;
-			ball->speed.x = 0.0f;
-			ball->speed.y = -6.0f;
-			ball->bounceStartY = ball->position.y;
+		if (CheckCollisionCircles(ball->GetPosition(), ball->GetRadius(), pkmnManager->list[0].position, pkmnManager->list[0].blueprint.radius)) {
+			ball->SetState(BALL_STATE::BOUNCE);
+			ball->SetSpeed({ 0.f, -6.f });
+			ball->SetBounceStart(ball->GetPosition());
 			pkmnManager->list[0].isActive = false;
 			ruleStep = 4;
 		}
@@ -241,7 +237,6 @@ void UpdateRule(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, 
 		break;
 
 	case 4:
-		UpdateBall(ball, playerObject);
 		// まとめ
 		if (IsKeyPressed(KEY_SPACE)) {
 			initialized = false;
@@ -254,7 +249,6 @@ void UpdateRule(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, 
 			ruleStep = 3;
 			moveStartPos = playerObject->position;
 			player->Reset();
-			*ball = CreateBall();
 			LoadStage(selectRect, pkmnManager);
 		}
 		break;
@@ -273,26 +267,26 @@ void DrawRule(GameObject* playerObject, const Ball* ball, const PkmnManager* pkm
 	else if (ruleStep == 1) {
 		DrawText("Drag with left click to move", 100, 100, 20, BLACK);
 		DrawText("Move around to catch pkmn!", 100, 150, 20, BLACK);
-		DrawBall(*ball);
+		ball->Draw();
 		playerObject->Draw();
 	}
 	else if (ruleStep == 2) {
 		DrawText("Press A/D to charge power", 100, 100, 20, BLACK);
 		DrawText("Then press W/S to charge height", 100, 150, 20, BLACK);
 		DrawText("Finally press SPACE to launch the ball", 100, 200, 20, BLACK);
-		DrawBall(*ball);
+		ball->Draw();
 		playerObject->Draw();
 	}
 	else if (ruleStep == 3) {
 		DrawText("Hit pkmn with the ball!", 100, 100, 20, BLACK);
 		DrawText("Press B to back to previous step", 100, 150, 20, BLACK);
-		DrawBall(*ball);
+		ball->Draw();
 		playerObject->Draw();
 	}
 	else if (ruleStep == 4) {
 		DrawText("Good luck!", 100, 100, 30, BLACK);
 		DrawText("Press SPACE to go back to stage select", 100, 150, 20, BLACK);
-		DrawBall(*ball);
+		ball->Draw();
 		playerObject->Draw();
 	}
 }
