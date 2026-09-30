@@ -17,15 +17,15 @@ static bool pauseSEStarted = false;
 
 void LoadMusic() {
 	ruleBGM = LoadMusicStream("resources/ruleBGM.mp3");
-	SetMusicVolume(ruleBGM, 0.01f);
+	SetMusicVolume(ruleBGM, 0.1f);
 	gameBGM = LoadMusicStream("resources/gameBGM.mp3");
-	SetMusicVolume(gameBGM, 0.01f);
+	SetMusicVolume(gameBGM, 0.1f);
 	titleBGM = LoadMusicStream("resources/titleBGM.mp3");
-	SetMusicVolume(titleBGM, 0.008f);
+	SetMusicVolume(titleBGM, 0.1f);
 	winBGM = LoadMusicStream("resources/winBGM.mp3");
-	SetMusicVolume(winBGM, 0.01f);
+	SetMusicVolume(winBGM, 0.1f);
 	loseBGM = LoadMusicStream("resources/loseBGM.mp3");
-	SetMusicVolume(loseBGM, 0.07f);
+	SetMusicVolume(loseBGM, 0.1f);
 	pauseSE = LoadSound("resources/pauseSE.mp3");
 }
 
