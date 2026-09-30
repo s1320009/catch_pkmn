@@ -1,4 +1,5 @@
 #include "Stage.h"
+#include "SceneManager.h"
 
 StageData GetStageData(int stageIndex) {
 	StageData stage = {};
@@ -25,30 +26,29 @@ StageData GetStageData(int stageIndex) {
 
 	switch (stageIndex) {
 	case 0:
-		stage.pkmnCount = 1;
-		stage.pkmnSpawns[0] = { pika, { 700, 300 } };
+		stage.pkmnSpawns.push_back({ pika, { 700, 300 } });
 		break;
 	case 1:
-		stage.pkmnCount = 2;
-		stage.pkmnSpawns[0] = { pika, { 400, 300 } };
-		stage.pkmnSpawns[1] = { m2, { 100, 300 } };
+		stage.pkmnSpawns.push_back({ pika, { 400, 300 } });
+		stage.pkmnSpawns.push_back({ m2, { 100, 300 } });
 		break;
 	case 2:
-		stage.pkmnCount = 3;
-		stage.pkmnSpawns[0] = { m2, { 500, 100 } };
-		stage.pkmnSpawns[1] = { m2, { 100, 300 } };
-		stage.pkmnSpawns[2] = { m2, { 900, 600 } };
+		stage.pkmnSpawns.push_back({ m2, { 500, 100 } });
+		stage.pkmnSpawns.push_back({ m2, { 100, 300 } });
+		stage.pkmnSpawns.push_back({ m2, { 900, 600 } });
 		break;
 	}
 	return stage;
 }
 
-void LoadStage(int stageIndex, PkmnManager* manager) {
-	*manager = CreatePkmnManager(); // まずはマネージャーを初期化して空にする
-
+void LoadStage(int stageIndex) {
+	SceneManager::Instance().ClearAll();
 	StageData stage = GetStageData(stageIndex);
-	for (int i = 0; i < stage.pkmnCount; i++) {
-		Pkmn p = CreatePkmn(stage.pkmnSpawns[i].blueprint, stage.pkmnSpawns[i].initialPos);
-		AddPkmn(manager, p);
+	for (const auto& spawnData : stage.pkmnSpawns) {
+		SceneManager::Instance().CreatePkmnObject(
+			spawnData.blueprint, 
+			spawnData.initialPos, 
+			"Pkmn"
+		);
 	}
 }

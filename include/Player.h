@@ -3,7 +3,9 @@
 #include "raylib.h"
 #include "Mewtwo.h"
 #include "Pkmn.h"
+#include "PkmnComponent.h"
 #include "Ball.h"
+#include <vector>
 
 class Player : public Component {
 public:
@@ -12,7 +14,7 @@ public:
 	void Update() override;
 	void Draw() override;
 
-	void CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManager);
+	void CheckPlayerHurt(ProjectileManager* manager, const std::vector<PkmnComponent*>& pkmnComponents);
 
 	bool IsDead() const;
 	bool IsInvincible() const;

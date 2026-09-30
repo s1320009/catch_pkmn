@@ -117,7 +117,7 @@ void Player::Draw() {
 	}
 }
 
-void Player::CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManager) {
+void Player::CheckPlayerHurt(ProjectileManager* manager, const std::vector<PkmnComponent*>& pkmnComponents) {
 	//無敵時間を減らす
 	if (this->m_invincibleFrame > 0) {
 		this->m_invincibleFrame--;
@@ -149,14 +149,12 @@ void Player::CheckPlayerHurt(ProjectileManager* manager, PkmnManager* pkmnManage
 		}
 
 		// 💥 2. ポケモン（Pkmn）との衝突判定（マネージャーをループ！）
-		for (int i = 0; i < pkmnManager->count; i++) {
-			Pkmn* enemy = &pkmnManager->list[i];
-
-			if(not enemy->isActive) continue;
-			if (not enemy->isVisible) continue;
+		for (PkmnComponent* pkmnComponent : pkmnComponents) {
+			if(not pkmnComponent->IsActive()) continue;
+			if (not pkmnComponent->IsVisible()) continue;
 
 			// 弾と同じように、円（敵）と四角（プレイヤー）の判定を行う！
-			if (CheckCollisionCircleRec(enemy->position, enemy->blueprint.radius, { gameObject->position.x - gameObject->scale.x / 2, gameObject->position.y - gameObject->scale.y / 2, gameObject->scale.x, gameObject->scale.y })) {
+			if (CheckCollisionCircleRec(pkmnComponent->GetPosition(), pkmnComponent->GetRadius(), { gameObject->position.x - gameObject->scale.x / 2, gameObject->position.y - gameObject->scale.y / 2, gameObject->scale.x, gameObject->scale.y })) {
 				this->m_life--;
 				this->m_invincibleFrame = 60; // 1秒無敵
 				return;

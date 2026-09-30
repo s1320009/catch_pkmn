@@ -1,5 +1,6 @@
 #pragma once
 #include "Pkmn.h"
+#include  <vector>
 
 typedef struct {
 	PkmnBlueprint blueprint;
@@ -7,9 +8,8 @@ typedef struct {
 } PkmnSpawnData;
 
 typedef struct {
-	int pkmnCount;
-	PkmnSpawnData pkmnSpawns[MAX_ACTIVE_POKEMON];
+	std::vector<PkmnSpawnData> pkmnSpawns;
 } StageData;
 
 StageData GetStageData(int stageIndex);
-void LoadStage(int stageIndex, PkmnManager* manager);
+void LoadStage(int stageIndex);

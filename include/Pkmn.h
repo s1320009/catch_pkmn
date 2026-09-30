@@ -49,28 +49,7 @@ typedef struct {
 	PkmnBlueprint blueprint;	// エディタで設定した設計図を丸ごと内包する
 }Pkmn;					// (状態)ゲーム中にリアルタイムで変化するもの(State / Instance)
 
-#define MAX_ACTIVE_POKEMON 10
-typedef struct {
-	Pkmn list[MAX_ACTIVE_POKEMON];  // アクティブなポケモンのリスト
-	int count;						// 現在のアクティブなポケモンの数
-} PkmnManager;
-
-// ==========================================================
-// ★変更点③: 生成関数に「設計図」を渡せるようにする
-// ==========================================================
-
-// 変更前: Pkmn CreatePkmn(PkmnType type, Vector2 startPos);
-// 変更後:
 Pkmn CreatePkmn(PkmnBlueprint blueprint, Vector2 startPos);
 
 void UpdatePkmn(Pkmn* pkmn, Vector2 playerPos);
 void DrawPkmn(Pkmn pkmn);
-
-// ==========================================================
-// ★変更点④: PkmnManagerの関数を追加
-// ==========================================================
-PkmnManager CreatePkmnManager();
-void AddPkmn(PkmnManager* manager, Pkmn pkmn);
-void UpdatePkmnManager(PkmnManager* manager, Vector2 playerPos);
-void DrawPkmnManager(PkmnManager manager);
-bool IsAnyPkmnActive(PkmnManager manager);	//アクティブなポケモンがいるかどうかを返す

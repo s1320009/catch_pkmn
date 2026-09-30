@@ -171,8 +171,11 @@
     <ClCompile Include="src\Mewtwo.cpp" />
     <ClCompile Include="src\Music.cpp" />
     <ClCompile Include="src\Pkmn.cpp" />
+    <ClCompile Include="src\PkmnComponent.cpp" />
     <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\Rule.cpp" />
+    <ClCompile Include="src\Scene.cpp" />
+    <ClCompile Include="src\SceneManager.cpp" />
     <ClCompile Include="src\Stage.cpp" />
     <ClCompile Include="src\StateSelect.cpp" />
     <ClCompile Include="src\Texture.cpp" />
@@ -191,8 +194,11 @@
     <ClInclude Include="include\Mewtwo.h" />
     <ClInclude Include="include\Music.h" />
     <ClInclude Include="include\Pkmn.h" />
+    <ClInclude Include="include\PkmnComponent.h" />
     <ClInclude Include="include\Player.h" />
     <ClInclude Include="include\Rule.h" />
+    <ClInclude Include="include\Scene.h" />
+    <ClInclude Include="include\SceneManager.h" />
     <ClInclude Include="include\Stage.h" />
     <ClInclude Include="include\StateSelect.h" />
     <ClInclude Include="include\Texture.h" />

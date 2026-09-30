@@ -12,10 +12,12 @@
 #include "GameState.h"
 #include "StateSelect.h"
 #include "Stage.h"
+#include "Scene.h"
+#include "SceneManager.h"
 #include "ContinueSelect.h"
 #include "Rule.h"
 
-void ResetGame(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, ProjectileManager* projectileManager) {
+void ResetGame(GameObject* playerObject, ProjectileManager* projectileManager) {
 	playerObject->position = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
 	playerObject->scale = { 50.0f, 50.0f };
 	auto* player = playerObject->GetComponent<Player>();
@@ -24,49 +26,33 @@ void ResetGame(GameObject* playerObject, Ball* ball, PkmnManager* pkmnManager, P
 	player->Reset();
 	pAnime->SetAnimeTexture(pIdleAnime);
 
-	// ボールのリセット
-	ball->Reset(); // 丸ごと初期状態で上書き
-
 	// 弾のリセット
 	ClearProjectileManager(projectileManager);
-
-
 	// ポケモンたちの復活
-	for (int i = 0; i < pkmnManager->count; i++) {
-		pkmnManager->list[i].isActive = true;
-		pkmnManager->list[i].state = PKMN_STATE_THINK;
-		pkmnManager->list[i].prevState = PKMN_STATE_THINK;
-		pkmnManager->list[i].timer = 0.0f;
-		pkmnManager->list[i].frameCounter = 0;
-		pkmnManager->list[i].position = pkmnManager->list[i].initialPos;
-	}
+	SceneManager::Instance().ResetAll();
 }
 
-void CheckCollisions(Ball* ball, PkmnManager* pkmnManager, Player* player) {		//衝突判定はいろんなやつらがぶつかるからここに置く　正しいかしらん
+void CheckCollisions(Ball* ball, std::vector<PkmnComponent*> pkmnComponents, Player* player) {		//衝突判定はいろんなやつらがぶつかるからここに置く
 
-	// 🛡️ 1. プレイヤーと敵・弾の当たり判定（CheckPlayerHurt を呼び出す）
-	//CheckPlayerHurt(GetMewtwoProjectileManager(), pkmnManager, player);・・・・・・・・・・・2/7
-	player->CheckPlayerHurt(GetMewtwoProjectileManager(), pkmnManager);
+	player->CheckPlayerHurt(GetMewtwoProjectileManager(), pkmnComponents);
 
 	// ⚽ 2. ボールとポケモンの当たり判定
 	if (ball->GetState() == BALL_STATE::FLYING) {
-		for (int i = 0; i < pkmnManager->count; i++) {
-			Pkmn* enemy = &pkmnManager->list[i];
+		for (PkmnComponent* pkmnComponent : pkmnComponents) {
+			if (not pkmnComponent->IsActive()) continue;
+			if (not pkmnComponent->IsVisible()) continue;
+			// 円（ボール）と円（ポケモン）の衝突をチェック！
+			if (CheckCollisionCircles(ball->GetPosition(), ball->GetRadius(), pkmnComponent->GetPosition(), pkmnComponent->GetRadius())) {
 
-			if (enemy->isActive && enemy->isVisible) {
-				// 円（ボール）と円（ポケモン）の衝突をチェック！
-				if (CheckCollisionCircles(ball->GetPosition(), ball->GetRadius(), enemy->position, enemy->blueprint.radius)) {
+				// 💥 ポケモンに当たったのでボールを跳ね返らせるステートにする！
+				ball->SetState(BALL_STATE::BOUNCE);
+				pkmnComponent->StartBounce(); // ポケモンも跳ね返るステートにする
+				// ① 真上に向かってピョコッと跳ねる初速を与える（上はマイナス）
+				ball->SetSpeed({ 0.0f, -6.0f });
 
-					// 💥 ポケモンに当たったのでボールを跳ね返らせるステートにする！
-					ball->SetState(BALL_STATE::BOUNCE);
-					enemy->state = PKMN_STATE_BOUNCE; // ポケモンも跳ね返るステートにする
-					// ① 真上に向かってピョコッと跳ねる初速を与える（上はマイナス）
-					ball->SetSpeed({ 0.0f, -6.0f }); // ★この数字を大きくすると高く跳ねます
-
-					// ② 当たった瞬間のY座標を「天井」の基準として記録しておく！　BOUNCEのほうで初期化するとずっと回るからこっち
-					ball->SetBounceStart(ball->GetPosition());
-					break;
-				}
+				// ② 当たった瞬間のY座標を「天井」の基準として記録しておく！　BOUNCEのほうで初期化するとずっと回るからこっち
+				ball->SetBounceStart(ball->GetPosition());
+				break;
 			}
 		}
 	}
@@ -111,15 +97,12 @@ int main() {
 
 	//初期化
 	InitializeEditor();
-	gameState = STATE_TITLE;			//もちろんタイトルで初期化
+	gameState = STATE_TITLE;			
 	
 	InitializeStateSelect();
 	InitializeContinueSelect();
-	PkmnManager pkmnManager{};
-	ProjectileManager projectileManager{};
 	BlinkingText text;
 	
-	//Player player = CreatePlayer();・・・・・・・・・・・・・・・・3/7
 	GameObject playerObject(0, "Player", "Player");
 	auto* player = playerObject.AddComponent<Player>();
 	auto* pIdle = playerObject.AddComponent<TextureAnimeComponent>(pIdleAnime);	
@@ -130,96 +113,78 @@ int main() {
 		UpdateMusic(gameState);
 		switch (gameState) {
 			case STATE_TITLE:
-				// タイトル画面の処理
 				UpdateBlinkingText(text);  //処理はこっち
 
 				if (IsKeyPressed(KEY_SPACE)) gameState = STATE_SELECT;
 				if (IsKeyPressed(KEY_E)) gameState = STATE_EDITOR;
 				break;
+
 			case STATE_SELECT:
-				// セレクト画面の処理
 				UpdateStateSelect();
 				UpdateBlinkingText(text);
 				if (STATE_SELECT != gameState) {
-					LoadStage(selectRect, &pkmnManager);
-					ResetGame(&playerObject, &player->GetBall(), &pkmnManager, &projectileManager);
-					//ResetGame(&player, &ball, &pkmnManager, &projectileManager);・・・・・・・・4/7
+					LoadStage(selectRect);
+					ResetGame(&playerObject, GetMewtwoProjectileManager());
 				}
 				break;
-			case STATE_RULE:
-				// ルール画面の処理
-				UpdateRule(&playerObject, &player->GetBall(), &pkmnManager, &gameState);
-				break;
-			case STATE_GAME:
-				// ゲーム画面の処理
-				// Update
 
-				//UpdatePlayer(&player);・・・・・・・・・・・・・・・・・・・・・・・・・・・・5/7
-				//UpdateBall(&ball, &player);
-				//UpdatePkmnManager(&pkmnManager, player.position);
+			case STATE_RULE:
+				UpdateRule(&playerObject, &player->GetBall(),&gameState);
+				break;
+
+			case STATE_GAME:
 				playerObject.Update();
-				//UpdateBall(&ball, player);
-				UpdatePkmnManager(&pkmnManager, playerObject.position);
+				gPlayerPosition = playerObject.position;
+				SceneManager::Instance().UpdateAll();
 				UpdateProjectileManager(GetMewtwoProjectileManager());
 
-				//CheckCollisions(&ball, &pkmnManager, &player);・・・・・・・・・・・・・・
-				CheckCollisions(&player->GetBall(), &pkmnManager, player);
+				CheckCollisions(&player->GetBall(), SceneManager::Instance().GetPkmnComponents(), player);
 
-				// 🌟 プレイヤーが死んだらコンティニュー画面へ！
-				if (player->IsDead()) {
-					//if (player.playerState == PLAYER_STATE_DEAD) {・・・・・・・・・・・・・・6/7
-					gameState = STATE_CONTINUE;
-				}
-
-				// 🌟 アクティブなポケモンがいなくなったらクリア画面へ！
-				if (!IsAnyPkmnActive(pkmnManager)) {
+				if (not SceneManager::Instance().GetActivePkmnCount()) {
 					gameState = STATE_CLEAR;
 				}
 
-				// 🌟 Pキーが押されたらポーズ画面へ！
+				if (player->IsDead()) {
+					gameState = STATE_CONTINUE;
+				}
+
 				if (IsKeyPressed(KEY_P)) {
 					gameState = STATE_PAUSE;
 				}
 				break;
+
 			case STATE_PAUSE:
-				// 一時停止の処理
-				// 背景のゲームは動かさない（Updateを一切呼ばないことで「中断」を表現！）
-				// 「Pキーで再開（STATE_GAMEへ）」
+				// 背景のゲームは動かさない（Updateを一切呼ばないことで「中断」を表現）
+
 				if (IsKeyPressed(KEY_P)) gameState = STATE_GAME;
-				// 「Rキーでルール説明へ」
 				if (IsKeyPressed(KEY_R)) gameState = STATE_RULE;
 				break;
+
 			case STATE_CONTINUE:
-				// 続行の処理
-				// 🌟 背景で敵だけを動かしたいので、プレイヤー以外をUpdateする！
+				//背景で敵だけを動かしたいので、プレイヤー以外をUpdate
 				
-				//UpdatePkmnManager(&pkmnManager, player.position);・・・・・・・・・・・・・・7/7
-				UpdatePkmnManager(&pkmnManager, playerObject.position);
+				gPlayerPosition = playerObject.position;
+				SceneManager::Instance().UpdateAll();
 				UpdateProjectileManager(GetMewtwoProjectileManager());
 				UpdateBlinkingText(text);
 				UpdateContinueSelect();
 
-				// 「スペースキーでコンティニュー（今やったステージをリトライ）」
 				if (IsKeyPressed(KEY_SPACE)) {
-					// 💡 ここでプレイヤーのライフや位置、ポケモンたちをリセットする処理を呼ぶ！
-					//ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager());・・・・・・・・・・・8/7
-					ResetGame(&playerObject, &player->GetBall(), &pkmnManager, GetMewtwoProjectileManager());
+					ResetGame(&playerObject, GetMewtwoProjectileManager());
 					continueSelectRect = 0; // コンティニュー画面の選択を初期化
 				}
 				break;
+
 			case STATE_CLEAR:
-				// クリアの処理
 				UpdateBlinkingText(text);
 
-				// 「スペースキーでタイトルに戻る」など
 				if (IsKeyPressed(KEY_SPACE)) {
-					//ResetGame(&player, &ball, &pkmnManager, GetMewtwoProjectileManager()); ・・・・・・・・・・・・・・9/7
-					ResetGame(&playerObject, &player->GetBall(), &pkmnManager, GetMewtwoProjectileManager()); 
+					ResetGame(&playerObject, GetMewtwoProjectileManager()); 
 					gameState = STATE_TITLE;
 				}
 				break;
+
 			case STATE_EDITOR:
-				// エディタの処理
 				UpdateEditor();
 				if (IsKeyPressed(KEY_B)) {
 					gameState = STATE_TITLE;
@@ -242,8 +207,7 @@ int main() {
 			DrawBlinkingText(text, myFont, "Press SPACE", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_RULE:
-			//DrawRule(&player,&ball,&pkmnManager);・・・・・・・・・・・・・・・・・・・・・・・10/7
-			DrawRule(&playerObject,&player->GetBall(),&pkmnManager);
+			DrawRule(&playerObject,&player->GetBall());
 			DrawBlinkingText(text, myFont, "Press B to back", { 550, 600 }, 20, BLACK);
 			break;
 		case STATE_GAME:
@@ -251,11 +215,9 @@ int main() {
 			DrawText("press P to pause", 10, 10, 30, WHITE);
 			
 			player->GetBall().Draw();
-
-			//DrawPlayer(player);
 			playerObject.Draw();
 
-			DrawPkmnManager(pkmnManager);
+			SceneManager::Instance().DrawAll();
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 			break;
 		case STATE_PAUSE:
@@ -266,7 +228,7 @@ int main() {
 			//DrawPlayer(player);
 			playerObject.Draw();
 
-			DrawPkmnManager(pkmnManager);
+			SceneManager::Instance().DrawAll();
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
 			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 0, 0, 150 }); // 半透明の黒いオーバーレイ 色の四つ目の引数がポイント
@@ -274,7 +236,7 @@ int main() {
 			break;
 		case STATE_CONTINUE:
 			DrawTexture(bgTexture, 0, 0, WHITE);
-			DrawPkmnManager(pkmnManager);
+			SceneManager::Instance().DrawAll();
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
 			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 0, 0, 200 }); // 半透明の黒いオーバーレイ poseより濃い
@@ -282,20 +244,17 @@ int main() {
 			DrawContinueSelect();
 			break;
 		case STATE_CLEAR:
-			// 背景はクリアした瞬間のゲーム画面をそのまま残して、薄くフィルターをかけるとおしゃれです
+			// 背景はクリアした瞬間のゲーム画面をそのまま残して
 			DrawTexture(bgTexture, 0, 0, WHITE);
 
-			//DrawPlayer(player);
 			playerObject.Draw();
 
 			player->GetBall().Draw();
-			DrawPkmnManager(pkmnManager);
+			SceneManager::Instance().DrawAll();
 			DrawProjectileManager(*GetMewtwoProjectileManager());
 
-			// 緑がかった半透明のフィルターで「さわやかなクリア感」を出す
 			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 200, 100, 100 });
 
-			// クリアの文字と操作案内
 			DrawTextEx(myFont, "STAGE CLEAR!", { 440, 300 }, 60, 1, GOLD);
 			DrawTextEx(myFont, "THANK YOU FOR PLAYING!", { 460, 450 }, 30, 1, GOLD);
 			DrawBlinkingText(text, myFont, "PRESS SPACE", { 550, 600 }, 20, WHITE);
