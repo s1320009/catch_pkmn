@@ -1,6 +1,7 @@
 #include "PkmnComponent.h"
 #include "Scene.h"
 #include "GameObject.h"
+#include "TextureAnimeComponent.h"
 
 PkmnComponent::PkmnComponent(PkmnBlueprint blueprint, Vector2 initialPos)
 	: m_initialPos(initialPos)
@@ -26,7 +27,14 @@ void PkmnComponent::Update()
 
 void PkmnComponent::Draw()
 {
-	DrawPkmn(m_state);
+	if (gameObject == nullptr) return;
+
+	auto* anime = gameObject->GetComponent<TextureAnimeComponent>();
+	if (anime == nullptr) return;
+
+	anime->tint = (m_state.isVisible && m_state.isActive)
+		? WHITE
+		: BLANK;
 }
 
 void PkmnComponent::Reset()

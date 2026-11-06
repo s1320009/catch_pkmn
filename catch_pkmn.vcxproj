@@ -149,6 +149,8 @@
     <Image Include="..\..\..\OneDrive\Desktop\画像\Drawing\Asperite\player_idle.png" />
     <Image Include="..\..\..\OneDrive\Desktop\画像\Drawing\Asperite\player_throw.png" />
     <Image Include="resources\backColor.png" />
+    <Image Include="resources\dog-Sheet.png" />
+    <Image Include="resources\eyeEnemy.png" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="resources\myFont.ttf" />

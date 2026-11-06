@@ -1,4 +1,6 @@
 #include "SceneManager.h"
+#include "TextureAnimeComponent.h"
+#include "Texture.h"
 #include <algorithm>
 
 SceneManager& SceneManager::Instance() {
@@ -13,8 +15,16 @@ void SceneManager::AddObject(std::shared_ptr<GameObject> obj) {
 std::shared_ptr<GameObject> SceneManager::CreatePkmnObject(PkmnBlueprint blueprint, Vector2 pos, const std::string& name) {
 	auto obj = std::make_shared<GameObject>(m_nextId++, name, "Pkmn");
 	obj->position = pos;
-	obj->scale = { 1.0f, 1.0f };
+	obj->scale = { blueprint.radius * 3.0f, blueprint.radius * 3.0f };
 	obj->AddComponent<PkmnComponent>(blueprint, pos);
+
+	if (blueprint.type == PKMN_PIKACHU) {
+		obj->AddComponent<TextureAnimeComponent>(dogAnime);
+	}
+	else if (blueprint.type == PKMN_MEWTWO) {
+		obj->AddComponent<TextureAnimeComponent>(eyeAnime);
+	}
+
 	m_objects.push_back(obj);
 	return obj;
 }

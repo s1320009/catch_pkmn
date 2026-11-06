@@ -27,6 +27,12 @@
     <Image Include="..\..\..\OneDrive\Desktop\画像\Drawing\Asperite\player_throw.png">
       <Filter>リソース ファイル</Filter>
     </Image>
+    <Image Include="resources\dog-Sheet.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="resources\eyeEnemy.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Font Include="resources\myFont.ttf">

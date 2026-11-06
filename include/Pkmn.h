@@ -4,7 +4,7 @@
 // 1.pkmnの種類を表す列挙型
 typedef enum {
 	PKMN_PIKACHU,
-	PKMN_MEWTWO,		
+	PKMN_MEWTWO,
 }PkmnType;
 
 // 2. pkmnの状態を表す列挙型
