@@ -13,7 +13,7 @@ AnimeTexture dogAnime;
 AnimeTexture eyeAnime;
 
 void LoadAllTexture() {
-	bgTexture = LoadTexture("resources/backColor.png");
+	bgTexture = LoadTexture("resources/backGround.png");
 	pIdle = LoadTexture("resources/player_idle.png");
 	pThrow = LoadTexture("resources/player_throw.png");
 	dog = LoadTexture("resources/dog-Sheet.png");
